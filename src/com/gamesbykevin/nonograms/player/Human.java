@@ -34,11 +34,11 @@ public final class Human extends Player
         final boolean mouseRightClick = engine.getMouse().hitRightButton() && engine.getMouse().isMouseReleased();
         final boolean mouseLeftClick = engine.getMouse().hitLeftButton() && engine.getMouse().isMouseReleased();
         
-        if (mouseRightClick || mouseLeftClick)
+        if (engine.getMouse().hasMouseMoved())
         {
-            //determine where the mouse is
-            final int col = (engine.getMouse().getLocation().x - Puzzles.START_X) / Puzzles.CELL_WIDTH;
-            final int row = (engine.getMouse().getLocation().y - Puzzles.START_Y) / Puzzles.CELL_HEIGHT;
+            //if mouse moved update highlighted location if within bounds
+            final int col = (engine.getMouse().getLocation().x - Puzzles.START_X) / engine.getManager().getPuzzles().getPuzzle().getCellDimensions();
+            final int row = (engine.getMouse().getLocation().y - Puzzles.START_Y) / engine.getManager().getPuzzles().getPuzzle().getCellDimensions();
             
             //make sure within column range
             if (col >= 0 && col <= getPuzzle().getCols() - 1)
@@ -46,6 +46,28 @@ public final class Human extends Player
                 //make sure within row range
                 if (row >= 0 && row <= getPuzzle().getRows() - 1)
                 {
+                    //set the current location of the player
+                    super.setHighlightCol(col);
+                    super.setHighlightRow(row);
+                }
+            }
+        } 
+        else if (mouseRightClick || mouseLeftClick)
+        {
+            //determine where the mouse is
+            final int col = (engine.getMouse().getLocation().x - Puzzles.START_X) / engine.getManager().getPuzzles().getPuzzle().getCellDimensions();
+            final int row = (engine.getMouse().getLocation().y - Puzzles.START_Y) / engine.getManager().getPuzzles().getPuzzle().getCellDimensions();
+
+            //make sure within column range
+            if (col >= 0 && col <= getPuzzle().getCols() - 1)
+            {
+                //make sure within row range
+                if (row >= 0 && row <= getPuzzle().getRows() - 1)
+                {
+                    //set the current location of the player
+                    super.setHighlightCol(col);
+                    super.setHighlightRow(row);
+                    
                     //right click
                     if (mouseRightClick)
                     {
@@ -53,12 +75,12 @@ public final class Human extends Player
                         {
                             case Puzzles.KEY_EMPTY:
                             case Puzzles.KEY_FILL:
-                                getPuzzle().set(col, row, Puzzles.KEY_MARK);
+                                getPuzzle().setKeyValue(col, row, Puzzles.KEY_MARK);
                                 break;
                                 
                             case Puzzles.KEY_MARK:
                             default:
-                                getPuzzle().set(col, row, Puzzles.KEY_EMPTY);
+                                getPuzzle().setKeyValue(col, row, Puzzles.KEY_EMPTY);
                                 break;
                         }
                     }
@@ -67,11 +89,11 @@ public final class Human extends Player
                         switch (getPuzzle().getKeyValue(col, row))
                         {
                             case Puzzles.KEY_EMPTY:
-                                getPuzzle().set(col, row, Puzzles.KEY_FILL);
+                                getPuzzle().setKeyValue(col, row, Puzzles.KEY_FILL);
                                 break;
                                 
                             case Puzzles.KEY_FILL:
-                                getPuzzle().set(col, row, Puzzles.KEY_EMPTY);
+                                getPuzzle().setKeyValue(col, row, Puzzles.KEY_EMPTY);
                                 break;
                                 
                             case Puzzles.KEY_MARK:
@@ -86,11 +108,4 @@ public final class Human extends Player
         //reset mouse events
         engine.getMouse().reset();
     }
-    
-    @Override
-    public void render(final Graphics graphics)
-    {
-        getPuzzle().render(graphics, Puzzles.START_X, Puzzles.START_Y);
-    }
-    
 }

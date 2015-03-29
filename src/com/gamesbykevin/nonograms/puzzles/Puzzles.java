@@ -1,5 +1,6 @@
 package com.gamesbykevin.nonograms.puzzles;
 
+import com.gamesbykevin.framework.menu.Menu;
 import com.gamesbykevin.framework.resources.Text;
 
 import com.gamesbykevin.nonograms.engine.Engine;
@@ -23,7 +24,7 @@ public final class Puzzles implements IElement
      */
     public enum Difficulty
     {
-        Medium, Hard, VeryHard, VeryEasy, Easy, 
+        Medium, Hard, VeryEasy, Easy, 
     }
     
     //our list of puzzles for each difficulty
@@ -34,8 +35,6 @@ public final class Puzzles implements IElement
     public static final int DIMENSIONS_EASY = 10;
     public static final int DIMENSIONS_MEDIUM = 15;
     public static final int DIMENSIONS_HARD = 20;
-    public static final int DIMENSIONS_VERY_HARD = 25;
-    public static final int DIMENSIONS_VERY_HARD_MAX = 30;
     
     //the characters that mean the current puzzle is finished in our text file
     private static final String PUZZLE_FINISH = "==========";
@@ -55,12 +54,12 @@ public final class Puzzles implements IElement
     private Difficulty difficulty;
     
     //starting coordinates of puzzle
-    public static final int START_X = 125;
-    public static final int START_Y = 125;
+    public static final int START_X = 200;
+    public static final int START_Y = 150;
     
     //the dimensions of each cell
-    public static final int CELL_WIDTH = 24;
-    public static final int CELL_HEIGHT = 24;
+    //public static final int CELL_WIDTH = 24;
+    //public static final int CELL_HEIGHT = 24;
     
     //the dimensions of each character
     private int fontHeight = 0;
@@ -218,18 +217,17 @@ public final class Puzzles implements IElement
             for (int col = 0; col < cols; col++)
             {
                 //default empty value
-                puzzle.set(col, row, KEY_EMPTY);
+                puzzle.setKeyValue(col, row, KEY_EMPTY);
                 
                 //if the column is greater than the current line length
                 if (col < line.length())
                 {
                     //if the current location contains a fill character '#'
                     if (line.substring(col, col + 1).equals(PUZZLE_FILL))
-                        puzzle.set(col, row, KEY_FILL);
+                        puzzle.setKeyValue(col, row, KEY_FILL);
                 }
             }
         }
-        
         
         try
         {
@@ -247,35 +245,37 @@ public final class Puzzles implements IElement
     
     /**
      * Add puzzle to our list.<BR>
+     * If the puzzle dimensions do not match (columns, rows) it will not be added.
      * Here we add the puzzle to a specific list depending on the puzzle size (columns) for each difficulty
      * @param puzzle The puzzle we want to add
      * @throws Exception if puzzle dimensions don't fall within a difficulty
      */
     private void add(final Puzzle puzzle) throws Exception
     {
-        if (puzzle.getCols() >= DIMENSIONS_VERY_HARD && puzzle.getCols() <= DIMENSIONS_VERY_HARD_MAX)
-        {
-            getPuzzleList(Difficulty.VeryHard).add(puzzle);
-        }
-        else if (puzzle.getCols() >= DIMENSIONS_HARD)
+        //if dimensions do not match, do not add
+        if (puzzle.getCols() != puzzle.getRows())
+            return;
+        
+        if (puzzle.getCols() == DIMENSIONS_HARD)
         {
             getPuzzleList(Difficulty.Hard).add(puzzle);
         }
-        else if (puzzle.getCols() >= DIMENSIONS_MEDIUM)
+        else if (puzzle.getCols() >= DIMENSIONS_MEDIUM && puzzle.getCols() < DIMENSIONS_HARD)
         {
             getPuzzleList(Difficulty.Medium).add(puzzle);
         }
-        else if (puzzle.getCols() >= DIMENSIONS_EASY)
+        else if (puzzle.getCols() >= DIMENSIONS_EASY && puzzle.getCols() < DIMENSIONS_MEDIUM)
         {
             getPuzzleList(Difficulty.Easy).add(puzzle);
         }
-        else if (puzzle.getCols() >= DIMENSIONS_VERY_EASY)
+        else if (puzzle.getCols() >= DIMENSIONS_VERY_EASY && puzzle.getCols() < DIMENSIONS_EASY)
         {
+            
             getPuzzleList(Difficulty.VeryEasy).add(puzzle);
         }
         else
         {
-            throw new Exception("Puzzle dimensions do not match a difficulty " + puzzle.getCols());
+            //throw new Exception("Puzzle dimensions do not match a difficulty " + puzzle.getCols());
         }
     }
     
@@ -312,27 +312,31 @@ public final class Puzzles implements IElement
     @Override
     public void render(final Graphics graphics) throws Exception
     {
-        if (fontWidth <= 0)
-            fontWidth = graphics.getFontMetrics().stringWidth("000");
-        if (fontHeight <= 0)
-            fontHeight = graphics.getFontMetrics().getHeight();
-            
         if (!puzzles.isEmpty())
         {
-            //draw puzzle
-            //getPuzzle().render(graphics, START_X, START_Y, CELL_WIDTH, CELL_HEIGHT, fontWidth, fontHeight);
+            //if font size is not set, set the appropriate font size
+            if (getPuzzle().getFontSize() < 1 || fontWidth < 1)
+            {
+                getPuzzle().setFontSize(Menu.getFontSize("000", getPuzzle().getCellDimensions(), graphics));
+                
+                //set the font size
+                graphics.setFont(graphics.getFont().deriveFont(getPuzzle().getFontSize()));
+                
+                //now get the font metrics
+                fontWidth = graphics.getFontMetrics().stringWidth("000");
+                fontHeight = graphics.getFontMetrics().getHeight();
+            }
+            else
+            {
+                //set the font size
+                graphics.setFont(graphics.getFont().deriveFont(getPuzzle().getFontSize()));
+            }
             
+            //set a color that will make it easy to view the column hints
             graphics.setColor(Color.RED);
         
             //draw puzzle hints
-            getPuzzle().renderColumnHint(graphics, START_X, START_Y, CELL_WIDTH, CELL_HEIGHT, fontWidth, fontHeight);
-            getPuzzle().renderRowHint(graphics, START_X, START_Y, CELL_WIDTH, CELL_HEIGHT, fontWidth, fontHeight);
-            
-            /*
-            graphics.drawString("Row = " + getPuzzle().getRows(), 100, 550);
-            graphics.drawString("Cols = " + getPuzzle().getCols(), 100, 565);
-            graphics.drawString("Desc = " + getPuzzle().getDesc(), 100, 580);
-            */
+            getPuzzle().renderHints(graphics, START_X, START_Y, fontWidth, fontHeight);
         }
     }
 }

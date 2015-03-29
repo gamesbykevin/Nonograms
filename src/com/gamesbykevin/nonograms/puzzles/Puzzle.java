@@ -1,8 +1,9 @@
 package com.gamesbykevin.nonograms.puzzles;
 
 import com.gamesbykevin.framework.resources.Disposable;
-import java.awt.Color;
+import com.gamesbykevin.nonograms.puzzles.Puzzles;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,12 @@ import java.util.List;
  */
 public final class Puzzle implements Disposable
 {
+    //the different sizes of the cells
+    public static final int CELL_DIMENSIONS_SMALL = 24;
+    public static final int CELL_DIMENSIONS_MEDIUM = 32;
+    public static final int CELL_DIMENSIONS_LARGE = 40;
+    public static final int CELL_DIMENSIONS_VERY_LARGE = 48;
+    
     //the key to our puzzle
     private int[][] key;
     
@@ -26,10 +33,17 @@ public final class Puzzle implements Disposable
     //no description will be an empty string
     public static final String NO_DESCIPTION = "";
     
-    public Puzzle(final int cols, final int rows)
+    //the dimensions of each cell in this puzzle
+    private int cellDimension;
+    
+    //the appropriate font size
+    private float fontSize = 0;
+    
+    public Puzzle(final Puzzle puzzle)
     {
-        this(cols, rows, NO_DESCIPTION);
+        this(puzzle.getCols(), puzzle.getRows(), NO_DESCIPTION);
     }
+    
     
     public Puzzle(final int cols, final int rows, final String desc)
     {
@@ -47,6 +61,21 @@ public final class Puzzle implements Disposable
         
         //reset board
         this.reset();
+    }
+    
+    public void setFontSize(final float fontSize)
+    {
+        this.fontSize = fontSize;
+    }
+    
+    public float getFontSize()
+    {
+        return this.fontSize;
+    }
+    
+    public int getCellDimensions()
+    {
+        return this.cellDimension;
     }
     
     /**
@@ -220,15 +249,51 @@ public final class Puzzle implements Disposable
     }
     
     /**
-     * Set all locations in the board to empty
+     * Remove a specific key from the puzzle<br>.
+     * The new key will be EMPTY
+     * @param keyValue The key we want to remove where found in this puzzle.
      */
-    public final void reset()
+    public void remove(final int keyValue)
     {
         for (int row = 0; row < getRows(); row++)
         {
             for (int col = 0; col < getCols(); col++)
             {
-                set(col, row, Puzzles.KEY_EMPTY);
+                if (getKeyValue(col, row) == keyValue)
+                    setKeyValue(col, row, Puzzles.KEY_EMPTY);
+            }
+        }
+    }
+    
+    /**
+     * Set all locations in the board to empty
+     */
+    public final void reset()
+    {
+        
+        //determine the size of the puzzle
+        if (getCols() >= Puzzles.DIMENSIONS_HARD)
+        {
+            this.cellDimension = CELL_DIMENSIONS_SMALL;
+        }
+        else if (getCols() >= Puzzles.DIMENSIONS_MEDIUM && getCols() < Puzzles.DIMENSIONS_HARD)
+        {
+            this.cellDimension = CELL_DIMENSIONS_MEDIUM;
+        }
+        else if (getCols() >= Puzzles.DIMENSIONS_EASY && getCols() < Puzzles.DIMENSIONS_MEDIUM)
+        {
+            this.cellDimension = CELL_DIMENSIONS_LARGE;
+        }
+        else
+        {
+            this.cellDimension = CELL_DIMENSIONS_VERY_LARGE;
+        }
+        
+        for (int row = 0; row < getRows(); row++)
+        {
+            for (int col = 0; col < getCols(); col++)
+            {                
+                setKeyValue(col, row, Puzzles.KEY_EMPTY);
             }
         }
     }
@@ -258,7 +323,7 @@ public final class Puzzle implements Disposable
      * @param row Row
      * @param key The solution for this location
      */
-    public void set(final int col, final int row, final int key)
+    public void setKeyValue(final int col, final int row, final int key)
     {
         getKey()[row][col] = key;
     }
@@ -289,61 +354,88 @@ public final class Puzzle implements Disposable
         this.key = null;
     }
     
-    public void render(final Graphics graphics, final int startX, final int startY)
-    {
-        render(graphics, startX, startY, Puzzles.CELL_WIDTH, Puzzles.CELL_HEIGHT);
-    }
-    
     /**
      * Render puzzle
      * @param graphics Object used to draw puzzle
      * @param startX Where our puzzle starts
      * @param startY Where our puzzle starts
-     * @param width  Dimensions of each cell
-     * @param height Dimensions of each cell
-     * @param fontWidth  Dimensions of each character
-     * @param fontHeight Dimensions of each character
      */
-    public void render(final Graphics graphics, final int startX, final int startY, final int width, final int height)
+    public void render(final Graphics graphics, final int startX, final int startY)
     {
+        //for now the squares will be white
         graphics.setColor(Color.WHITE);
         
         for (int row = 0; row < getRows(); row++)
         {
             for (int col = 0; col < getCols(); col++)
             {
-                final int x = Puzzles.getX(startX, width, col);
-                final int y = Puzzles.getY(startY, height, row);
+                final int x = Puzzles.getX(startX, getCellDimensions(), col);
+                final int y = Puzzles.getY(startY, getCellDimensions(), row);
                 
                 switch (getKeyValue(col, row))
                 {
                     case Puzzles.KEY_FILL:
-                        graphics.fillRect(x, y, width, height);
+                        graphics.fillRect(x, y, getCellDimensions(), getCellDimensions());
                         break;
                         
                     case Puzzles.KEY_MARK:
-                        graphics.drawLine(x, y, x + width, y + height);
-                        graphics.drawLine(x + width, y, x, y + height);
+                        graphics.drawLine(x, y, x + getCellDimensions(), y + getCellDimensions());
+                        graphics.drawLine(x + getCellDimensions(), y, x, y + getCellDimensions());
                         break;
                 }
             }
         }
         
+        //the color for our board
         graphics.setColor(Color.RED);
         
         for (int row = 0; row < getRows(); row++)
         {
             for (int col = 0; col < getCols(); col++)
             {
-                final int x = Puzzles.getX(startX, width, col);
-                final int y = Puzzles.getY(startY, height, row);
+                final int x = Puzzles.getX(startX, getCellDimensions(), col);
+                final int y = Puzzles.getY(startY, getCellDimensions(), row);
                 
-                graphics.drawRect(x, y, width, height);
+                graphics.drawRect(x, y, getCellDimensions(), getCellDimensions());
             }
         }
     }
     
-    public void renderColumnHint(final Graphics graphics, final int startX, final int startY, final int width, final int height, final int fontWidth, final int fontHeight)
+    public void renderHighlight(final Graphics graphics, final int startX, final int startY, final int highlightCol, final int highlightRow)
+    {
+        graphics.setColor(Color.YELLOW);
+        
+        for (int row = 0; row < getRows(); row++)
+        {
+            for (int col = 0; col < getCols(); col++)
+            {
+                final int x = Puzzles.getX(startX, getCellDimensions(), col);
+                final int y = Puzzles.getY(startY, getCellDimensions(), row);
+                
+                if (row == highlightRow || col == highlightCol)
+                    graphics.fillRect(x, y, getCellDimensions(), getCellDimensions());
+            }
+        }
+    }
+    
+    /**
+     * Draw the puzzle hints
+     * @param graphics Object used to render graphics
+     * @param startX Start x-coordinate
+     * @param startY Start y-coordinate
+     * @param fontWidth The dimensions of the font
+     * @param fontHeight The dimensions of the font
+     */
+    public void renderHints(final Graphics graphics, final int startX, final int startY, final int fontWidth, final int fontHeight)
+    {
+        //draw the column hints
+        renderColumnHint(graphics,  startX, startY, fontWidth, fontHeight);
+        
+        //draw the row hints
+        renderRowHint(graphics,     startX, startY, fontWidth, fontHeight);
+    }
+    
+    private void renderColumnHint(final Graphics graphics, final int startX, final int startY, final int fontWidth, final int fontHeight)
     {
         //draw column hint
         for (int col = 0; col < getCols(); col++)
@@ -355,12 +447,12 @@ public final class Puzzle implements Disposable
             
             for (int i = 0; i < tmp.size(); i++)
             {
-                graphics.drawString(tmp.get(i) + "", startX + (col * width) + (int)(fontWidth * .25), y + (i * fontHeight));
+                graphics.drawString(tmp.get(i) + "", startX + (col * getCellDimensions()) + (int)(fontWidth * .25), y + (i * fontHeight));
             }
         }
     }
     
-    public void renderRowHint(final Graphics graphics, final int startX, final int startY, final int width, final int height, final int fontWidth, final int fontHeight)
+    private void renderRowHint(final Graphics graphics, final int startX, final int startY, final int fontWidth, final int fontHeight)
     {
         //draw row hint
         for (int row = 0; row < getRows(); row++)
@@ -372,7 +464,7 @@ public final class Puzzle implements Disposable
             
             for (int i = 0; i < tmp.size(); i++)
             {
-                graphics.drawString(tmp.get(i) + "", x + (i * fontWidth), startY + (row * height) + (int)(fontHeight * .75));
+                graphics.drawString(tmp.get(i) + "", x + (i * fontWidth), startY + (row * getCellDimensions()) + (int)(fontHeight * .75));
             }
         }
     }

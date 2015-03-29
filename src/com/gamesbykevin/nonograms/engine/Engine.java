@@ -235,10 +235,10 @@ public final class Engine implements KeyListener, MouseMotionListener, MouseList
         if (font == null)
             font = graphics.getFont().deriveFont(Font.BOLD, GAME_FONT_SIZE);
         
-        if (menu != null)
+        if (getMenu() != null)
         {
             //if the menu is finished and the window has focus
-            if (menu.hasFinished() && menu.hasFocus())
+            if (getMenu().hasFinished() && getMenu().hasFocus())
             {
                 //before we start game we need to load the resources
                 if (resources.isLoading())
@@ -274,14 +274,14 @@ public final class Engine implements KeyListener, MouseMotionListener, MouseList
     private void renderMenu(Graphics graphics) throws Exception
     {
         //if menu is setup draw menu
-        if (menu.isSetup() && !menu.hasFinished())
-            menu.render(graphics);
+        if (getMenu().isSetup() && !getMenu().hasFinished())
+            getMenu().render(graphics);
 
         //if menu is finished and we don't want to hide the mouse cursor then draw it, or if the menu is not finished draw it
-        if (menu.hasFinished() && !Shared.HIDE_MOUSE || !menu.hasFinished())
+        if (getMenu().hasFinished() && !Shared.HIDE_MOUSE || !getMenu().hasFinished())
         {
             //draw the mouse
-            menu.renderMouse(graphics, mouse);
+            getMenu().renderMouse(graphics, mouse);
         }
     }
     

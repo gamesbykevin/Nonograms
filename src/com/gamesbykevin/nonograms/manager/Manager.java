@@ -158,6 +158,7 @@ public final class Manager implements IManager
         //did we solve the puzzle
         if (getPuzzles().getPuzzle().hasMatch(getHuman().getPuzzle()))
         {
+            getHuman().getPuzzle().remove(Puzzles.KEY_MARK);
             graphics.drawString("YOU WIN - " + getPuzzles().getPuzzle().getDesc(), 100, 500);
         }
     }

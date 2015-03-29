@@ -60,19 +60,8 @@
         <options name="Difficulty - " id="Difficulty">
             <option>Medium</option>
             <option>Hard</option>
-            <option>Very Hard</option>
             <option>Very Easy</option>
             <option>Easy</option>
-        </options>
-        <options name="Starting Funds - " id="Funds">
-            <option>100</option>
-            <option>500</option>
-            <option>1000</option>
-        </options>
-        <options name="Lives - " id="Lives">
-            <option>50</option>
-            <option>100</option>
-            <option>500</option>
         </options>
         <options name="All Sound: " id="Sound">
             <option>On</option>

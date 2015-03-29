@@ -4,6 +4,7 @@ import com.gamesbykevin.framework.resources.Disposable;
 
 import com.gamesbykevin.nonograms.engine.Engine;
 import com.gamesbykevin.nonograms.puzzles.Puzzle;
+import com.gamesbykevin.nonograms.puzzles.Puzzles;
 import com.gamesbykevin.nonograms.shared.IElement;
 
 import java.awt.Graphics;
@@ -17,9 +18,48 @@ public abstract class Player implements IElement, Disposable
     //the board where the player makes their selections
     private Puzzle board;
     
+    //the location we will highlight to make the puzzle more friendly for the user
+    private int highlightCol = 0, highlightRow = 0;
+    
     protected Player()
     {
         
+    }
+    
+    /**
+     * Set the highlighted Column of the current location for this player
+     * @param highlightCol The current column location of the player
+     */
+    protected void setHighlightCol(final int highlightCol)
+    {
+        this.highlightCol = highlightCol;
+    }
+    
+    /**
+     * Get the highlighted column
+     * @return The column where our player is currently located
+     */
+    protected int getHighlightCol()
+    {
+        return this.highlightCol;
+    }
+    
+    /**
+     * Set the highlighted Row of the current location for this player
+     * @param highlightRow The current row location of the player
+     */
+    protected void setHighlightRow(final int highlightRow)
+    {
+        this.highlightRow = highlightRow;
+    }
+    
+    /**
+     * Get the highlighted row
+     * @return The row where our player is currently located
+     */
+    protected int getHighlightRow()
+    {
+        return this.highlightRow;
     }
     
     @Override
@@ -39,20 +79,20 @@ public abstract class Player implements IElement, Disposable
     
     /**
      * Create a new puzzle board
-     * @param puzzle The puzzle containing the desired dimensions
+     * @param puzzle The puzzle we want to copy for this player
      */
     public void create(final Puzzle puzzle)
     {
-        create(puzzle.getCols(), puzzle.getRows());
+        board = new Puzzle(puzzle);
     }
     
-    /**
-     * Create a new puzzle board
-     * @param cols Dimensions of the puzzle board
-     * @param rows Dimensions of the puzzle board
-     */
-    public void create(final int cols, final int rows)
+    @Override
+    public void render(final Graphics graphics)
     {
-        board = new Puzzle(cols, rows);
+        //draw highlight first of our location
+        getPuzzle().renderHighlight(graphics, Puzzles.START_X, Puzzles.START_Y, getHighlightCol(), getHighlightRow());
+        
+        //then draw our puzzle
+        getPuzzle().render(graphics, Puzzles.START_X, Puzzles.START_Y);
     }
 }
