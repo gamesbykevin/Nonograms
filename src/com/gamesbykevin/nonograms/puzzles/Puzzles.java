@@ -6,8 +6,9 @@ import com.gamesbykevin.framework.resources.Text;
 import com.gamesbykevin.nonograms.engine.Engine;
 import com.gamesbykevin.nonograms.resources.GameText.Keys;
 import com.gamesbykevin.nonograms.shared.IElement;
-import java.awt.Color;
 
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +43,9 @@ public final class Puzzles implements IElement
     //the fill text in the text file
     private static final String PUZZLE_FILL = "#";
     
+    //each hint will be 2 characters long (max) so we add an extra space here
+    private static final String DEFAULT_MAX_HINT_SIZE = "000";
+    
     //the different key options for the puzzle
     public static final int KEY_FILL = 0;
     public static final int KEY_EMPTY = 1;
@@ -51,7 +55,7 @@ public final class Puzzles implements IElement
     private int current = 0;
     
     //the level of difficutly of puzzles we want to play
-    private Difficulty difficulty;
+    private Difficulty difficulty = Difficulty.Medium;
     
     //starting coordinates of puzzle
     public static final int START_X = 200;
@@ -65,13 +69,13 @@ public final class Puzzles implements IElement
     private int fontHeight = 0;
     private int fontWidth = 0;
     
+    //each puzzle could have a different font
+    private Font puzzleFont;
+    
     public Puzzles()
     {
         //create new puzzle list
         this.puzzles = new HashMap<>();
-        
-        //set the difficulty
-        setDifficulty(Difficulty.Medium);
     }
     
     /**
@@ -120,6 +124,16 @@ public final class Puzzles implements IElement
         return getPuzzleList().get(current);
     }
     
+    /**
+     * Reset the puzzle font calculations
+     */
+    public void resetFont()
+    {
+        this.fontHeight = 0;
+        this.fontWidth = 0;
+        this.puzzleFont = null;
+    }
+    
     @Override
     public void dispose()
     {
@@ -139,6 +153,8 @@ public final class Puzzles implements IElement
             puzzles.clear();
             puzzles = null;
         }
+        
+        puzzleFont = null;
     }
     
     /**
@@ -229,18 +245,11 @@ public final class Puzzles implements IElement
             }
         }
         
-        try
-        {
-            //calculate the hints
-            puzzle.calculateHint();
-            
-            //finally add to proper list
-            add(puzzle);
-        }
-        catch (Exception e)
-        {
-            e.printStackTrace();
-        }
+        //calculate the hints
+        puzzle.calculateHint();
+
+        //finally add to proper list
+        add(puzzle);
     }
     
     /**
@@ -248,9 +257,8 @@ public final class Puzzles implements IElement
      * If the puzzle dimensions do not match (columns, rows) it will not be added.
      * Here we add the puzzle to a specific list depending on the puzzle size (columns) for each difficulty
      * @param puzzle The puzzle we want to add
-     * @throws Exception if puzzle dimensions don't fall within a difficulty
      */
-    private void add(final Puzzle puzzle) throws Exception
+    private void add(final Puzzle puzzle)
     {
         //if dimensions do not match, do not add
         if (puzzle.getCols() != puzzle.getRows())
@@ -270,12 +278,7 @@ public final class Puzzles implements IElement
         }
         else if (puzzle.getCols() >= DIMENSIONS_VERY_EASY && puzzle.getCols() < DIMENSIONS_EASY)
         {
-            
             getPuzzleList(Difficulty.VeryEasy).add(puzzle);
-        }
-        else
-        {
-            //throw new Exception("Puzzle dimensions do not match a difficulty " + puzzle.getCols());
         }
     }
     
@@ -315,22 +318,27 @@ public final class Puzzles implements IElement
         if (!puzzles.isEmpty())
         {
             //if font size is not set, set the appropriate font size
-            if (getPuzzle().getFontSize() < 1 || fontWidth < 1)
+            if (fontWidth < 1 || puzzleFont == null)
             {
-                getPuzzle().setFontSize(Menu.getFontSize("000", getPuzzle().getCellDimensions(), graphics));
+                //the size of each cell
+                final int dimensions = getPuzzle().getCellDimensions();
+                
+                //the appropriate font size
+                final float fontSize = Menu.getFontSize(DEFAULT_MAX_HINT_SIZE, dimensions, graphics);
                 
                 //set the font size
-                graphics.setFont(graphics.getFont().deriveFont(getPuzzle().getFontSize()));
+                puzzleFont = graphics.getFont().deriveFont(fontSize);
+                
+                //set the font for this puzzle
+                graphics.setFont(puzzleFont);
                 
                 //now get the font metrics
-                fontWidth = graphics.getFontMetrics().stringWidth("000");
+                fontWidth = graphics.getFontMetrics().stringWidth(DEFAULT_MAX_HINT_SIZE);
                 fontHeight = graphics.getFontMetrics().getHeight();
             }
-            else
-            {
-                //set the font size
-                graphics.setFont(graphics.getFont().deriveFont(getPuzzle().getFontSize()));
-            }
+            
+            //set the font for this puzzle
+            graphics.setFont(puzzleFont);
             
             //set a color that will make it easy to view the column hints
             graphics.setColor(Color.RED);

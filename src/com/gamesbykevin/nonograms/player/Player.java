@@ -21,9 +21,30 @@ public abstract class Player implements IElement, Disposable
     //the location we will highlight to make the puzzle more friendly for the user
     private int highlightCol = 0, highlightRow = 0;
     
+    //do we highlight the player current location
+    private boolean showHighlight = true;
+    
     protected Player()
     {
         
+    }
+    
+    /**
+     * Set the highlight
+     * @param showHighlight true if we want to highlight the players current location, false otherwise
+     */
+    public void setHighlight(final boolean showHighlight)
+    {
+        this.showHighlight = showHighlight;
+    }
+    
+    /**
+     * Do we highlight the players current location
+     * @return true=yes, false=no
+     */
+    public boolean hasHighlight()
+    {
+        return this.showHighlight;
     }
     
     /**
@@ -89,8 +110,11 @@ public abstract class Player implements IElement, Disposable
     @Override
     public void render(final Graphics graphics)
     {
-        //draw highlight first of our location
-        getPuzzle().renderHighlight(graphics, Puzzles.START_X, Puzzles.START_Y, getHighlightCol(), getHighlightRow());
+        if (hasHighlight())
+        {
+            //draw highlight first of our location
+            getPuzzle().renderHighlight(graphics, Puzzles.START_X, Puzzles.START_Y, getHighlightCol(), getHighlightRow());
+        }
         
         //then draw our puzzle
         getPuzzle().render(graphics, Puzzles.START_X, Puzzles.START_Y);

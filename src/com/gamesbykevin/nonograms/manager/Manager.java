@@ -51,6 +51,9 @@ public final class Manager implements IManager
         //set the difficulty
         getPuzzles().setDifficulty(Puzzles.Difficulty.values()[engine.getMenu().getOptionSelectionIndex(LayerKey.Options, OptionKey.Difficulty)]);
         
+        //reset the font
+        getPuzzles().resetFont();
+        
         if (human == null)
             human = new Human();
         
@@ -134,7 +137,8 @@ public final class Manager implements IManager
         
         if (getHuman() != null)
         {
-            getHuman().update(engine);
+            if (!getPuzzles().getPuzzle().hasSolved())
+                getHuman().update(engine);
         }
     }
     
@@ -145,21 +149,23 @@ public final class Manager implements IManager
     @Override
     public void render(final Graphics graphics) throws Exception
     {
-        if (getPuzzles() != null)
-        {
-            getPuzzles().render(graphics);
-        }
-        
-        if (getHuman() != null)
-        {
-            getHuman().render(graphics);
-        }
+        if (getPuzzles() == null || getHuman() == null)
+            return;
         
         //did we solve the puzzle
         if (getPuzzles().getPuzzle().hasMatch(getHuman().getPuzzle()))
         {
+            getPuzzles().getPuzzle().markSolved();
+            getHuman().getPuzzle().markSolved();
             getHuman().getPuzzle().remove(Puzzles.KEY_MARK);
+            getHuman().setHighlight(false);
+            getHuman().render(graphics);
             graphics.drawString("YOU WIN - " + getPuzzles().getPuzzle().getDesc(), 100, 500);
+        }
+        else
+        {
+            getPuzzles().render(graphics);
+            getHuman().render(graphics);
         }
     }
 }

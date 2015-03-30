@@ -36,8 +36,8 @@ public final class Puzzle implements Disposable
     //the dimensions of each cell in this puzzle
     private int cellDimension;
     
-    //the appropriate font size
-    private float fontSize = 0;
+    //has this puzzle been solved
+    private boolean solved = false;
     
     public Puzzle(final Puzzle puzzle)
     {
@@ -63,14 +63,22 @@ public final class Puzzle implements Disposable
         this.reset();
     }
     
-    public void setFontSize(final float fontSize)
+    /**
+     * Mark this puzzle as solved
+     */
+    public void markSolved()
     {
-        this.fontSize = fontSize;
+        this.solved = true;
     }
     
-    public float getFontSize()
+    /**
+     * Has this puzzle been solved?<br>
+     * This means have all the correct
+     * @return true=yes, false=no
+     */
+    public boolean hasSolved()
     {
-        return this.fontSize;
+        return this.solved;
     }
     
     public int getCellDimensions()
@@ -270,7 +278,6 @@ public final class Puzzle implements Disposable
      */
     public final void reset()
     {
-        
         //determine the size of the puzzle
         if (getCols() >= Puzzles.DIMENSIONS_HARD)
         {
@@ -386,6 +393,16 @@ public final class Puzzle implements Disposable
             }
         }
         
+        //if we have not yet solved
+        if (!hasSolved())
+        {
+            //draw the outline of the board
+            renderOutline(graphics, startX, startY);
+        }
+    }
+    
+    private void renderOutline(final Graphics graphics, final int startX, final int startY)
+    {
         //the color for our board
         graphics.setColor(Color.RED);
         
@@ -403,17 +420,21 @@ public final class Puzzle implements Disposable
     
     public void renderHighlight(final Graphics graphics, final int startX, final int startY, final int highlightCol, final int highlightRow)
     {
-        graphics.setColor(Color.YELLOW);
-        
-        for (int row = 0; row < getRows(); row++)
+        //if we have not yet solved
+        if (!hasSolved())
         {
-            for (int col = 0; col < getCols(); col++)
+            graphics.setColor(Color.YELLOW);
+
+            for (int row = 0; row < getRows(); row++)
             {
-                final int x = Puzzles.getX(startX, getCellDimensions(), col);
-                final int y = Puzzles.getY(startY, getCellDimensions(), row);
-                
-                if (row == highlightRow || col == highlightCol)
-                    graphics.fillRect(x, y, getCellDimensions(), getCellDimensions());
+                for (int col = 0; col < getCols(); col++)
+                {
+                    final int x = Puzzles.getX(startX, getCellDimensions(), col);
+                    final int y = Puzzles.getY(startY, getCellDimensions(), row);
+
+                    if (row == highlightRow || col == highlightCol)
+                        graphics.fillRect(x, y, getCellDimensions(), getCellDimensions());
+                }
             }
         }
     }
@@ -428,11 +449,15 @@ public final class Puzzle implements Disposable
      */
     public void renderHints(final Graphics graphics, final int startX, final int startY, final int fontWidth, final int fontHeight)
     {
-        //draw the column hints
-        renderColumnHint(graphics,  startX, startY, fontWidth, fontHeight);
-        
-        //draw the row hints
-        renderRowHint(graphics,     startX, startY, fontWidth, fontHeight);
+        //if we have not yet solved
+        if (!hasSolved())
+        {
+            //draw the column hints
+            renderColumnHint(graphics,  startX, startY, fontWidth, fontHeight);
+
+            //draw the row hints
+            renderRowHint(graphics,     startX, startY, fontWidth, fontHeight);
+        }
     }
     
     private void renderColumnHint(final Graphics graphics, final int startX, final int startY, final int fontWidth, final int fontHeight)

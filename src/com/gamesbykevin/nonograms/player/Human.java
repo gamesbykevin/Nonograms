@@ -74,12 +74,10 @@ public final class Human extends Player
                         switch (getPuzzle().getKeyValue(col, row))
                         {
                             case Puzzles.KEY_EMPTY:
-                            case Puzzles.KEY_FILL:
                                 getPuzzle().setKeyValue(col, row, Puzzles.KEY_MARK);
                                 break;
                                 
                             case Puzzles.KEY_MARK:
-                            default:
                                 getPuzzle().setKeyValue(col, row, Puzzles.KEY_EMPTY);
                                 break;
                         }
