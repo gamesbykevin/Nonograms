@@ -1,5 +1,6 @@
 package com.gamesbykevin.nonograms.player;
 
+import com.gamesbykevin.framework.base.Sprite;
 import com.gamesbykevin.framework.resources.Disposable;
 
 import com.gamesbykevin.nonograms.engine.Engine;
@@ -8,12 +9,13 @@ import com.gamesbykevin.nonograms.puzzles.Puzzles;
 import com.gamesbykevin.nonograms.shared.IElement;
 
 import java.awt.Graphics;
+import java.awt.Image;
 
 /**
  * This class will represent a player attempting to solve a puzzle
  * @author GOD
  */
-public abstract class Player implements IElement, Disposable
+public abstract class Player extends Sprite implements IElement, Disposable
 {
     //the board where the player makes their selections
     private Puzzle board;
@@ -24,9 +26,9 @@ public abstract class Player implements IElement, Disposable
     //do we highlight the player current location
     private boolean showHighlight = true;
     
-    protected Player()
+    protected Player(final Image image)
     {
-        
+        super.setImage(image);
     }
     
     /**
@@ -107,6 +109,26 @@ public abstract class Player implements IElement, Disposable
         board = new Puzzle(puzzle);
     }
     
+    public void checkComplete(final Engine engine) throws Exception
+    {
+        final Puzzle current = engine.getManager().getPuzzles().getPuzzle();
+        
+        if (current.hasMatch(getPuzzle()))
+        {
+            //mark the current puzzle as solved
+            current.markSolved();
+            
+            //mark ours solved as well
+            getPuzzle().markSolved();
+            
+            //remove all existing marks to display the full picture
+            getPuzzle().remove(Puzzles.KEY_MARK);
+            
+            //stop highlighting
+            setHighlight(false);
+        }
+    }
+    
     @Override
     public void render(final Graphics graphics)
     {
@@ -117,6 +139,6 @@ public abstract class Player implements IElement, Disposable
         }
         
         //then draw our puzzle
-        getPuzzle().render(graphics, Puzzles.START_X, Puzzles.START_Y);
+        getPuzzle().render(graphics, getImage(), Puzzles.START_X, Puzzles.START_Y);
     }
 }

@@ -1,5 +1,6 @@
 package com.gamesbykevin.nonograms.puzzles;
 
+import com.gamesbykevin.framework.base.Sprite;
 import com.gamesbykevin.framework.menu.Menu;
 import com.gamesbykevin.framework.resources.Text;
 
@@ -10,6 +11,7 @@ import com.gamesbykevin.nonograms.shared.IElement;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +20,7 @@ import java.util.List;
  * This class will contain all of the puzzles in the game
  * @author GOD
  */
-public final class Puzzles implements IElement
+public final class Puzzles extends Sprite implements IElement
 {
     /**
      * Make sure the values are in this specific order
@@ -43,9 +45,6 @@ public final class Puzzles implements IElement
     //the fill text in the text file
     private static final String PUZZLE_FILL = "#";
     
-    //each hint will be 2 characters long (max) so we add an extra space here
-    private static final String DEFAULT_MAX_HINT_SIZE = "000";
-    
     //the different key options for the puzzle
     public static final int KEY_FILL = 0;
     public static final int KEY_EMPTY = 1;
@@ -61,19 +60,11 @@ public final class Puzzles implements IElement
     public static final int START_X = 200;
     public static final int START_Y = 150;
     
-    //the dimensions of each cell
-    //public static final int CELL_WIDTH = 24;
-    //public static final int CELL_HEIGHT = 24;
-    
-    //the dimensions of each character
-    private int fontHeight = 0;
-    private int fontWidth = 0;
-    
-    //each puzzle could have a different font
-    private Font puzzleFont;
-    
-    public Puzzles()
+    public Puzzles(final Image image)
     {
+        //store the image
+        super.setImage(image);
+        
         //create new puzzle list
         this.puzzles = new HashMap<>();
     }
@@ -124,16 +115,6 @@ public final class Puzzles implements IElement
         return getPuzzleList().get(current);
     }
     
-    /**
-     * Reset the puzzle font calculations
-     */
-    public void resetFont()
-    {
-        this.fontHeight = 0;
-        this.fontWidth = 0;
-        this.puzzleFont = null;
-    }
-    
     @Override
     public void dispose()
     {
@@ -153,8 +134,6 @@ public final class Puzzles implements IElement
             puzzles.clear();
             puzzles = null;
         }
-        
-        puzzleFont = null;
     }
     
     /**
@@ -317,34 +296,8 @@ public final class Puzzles implements IElement
     {
         if (!puzzles.isEmpty())
         {
-            //if font size is not set, set the appropriate font size
-            if (fontWidth < 1 || puzzleFont == null)
-            {
-                //the size of each cell
-                final int dimensions = getPuzzle().getCellDimensions();
-                
-                //the appropriate font size
-                final float fontSize = Menu.getFontSize(DEFAULT_MAX_HINT_SIZE, dimensions, graphics);
-                
-                //set the font size
-                puzzleFont = graphics.getFont().deriveFont(fontSize);
-                
-                //set the font for this puzzle
-                graphics.setFont(puzzleFont);
-                
-                //now get the font metrics
-                fontWidth = graphics.getFontMetrics().stringWidth(DEFAULT_MAX_HINT_SIZE);
-                fontHeight = graphics.getFontMetrics().getHeight();
-            }
-            
-            //set the font for this puzzle
-            graphics.setFont(puzzleFont);
-            
-            //set a color that will make it easy to view the column hints
-            graphics.setColor(Color.RED);
-        
             //draw puzzle hints
-            getPuzzle().renderHints(graphics, START_X, START_Y, fontWidth, fontHeight);
+            getPuzzle().renderHints(graphics, getImage(), START_X, START_Y);
         }
     }
 }

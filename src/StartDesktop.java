@@ -58,7 +58,17 @@ public final class StartDesktop extends JPanel
                             //thread will no longer be active
                             startDesktop.getMain().setActive(false);
                             
-                            //recycle resources
+                            try
+                            {
+                                //wait for the thread to finish execution
+                                startDesktop.getMain().join();
+                            }
+                            catch (Exception ex)
+                            {
+                                ex.printStackTrace();
+                            }
+                            
+                            //now we can recycle resources
                             startDesktop.getMain().dispose();
                         }
                     }

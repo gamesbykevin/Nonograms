@@ -16,6 +16,7 @@ public final class GameImages extends ImageManager
      */
     public enum Keys
     {
+        Background1, Background2, Board
     }
     
     public GameImages() throws Exception

@@ -28,6 +28,9 @@ public final class Manager implements IManager
     //object representing the human
     private Human human;
     
+    //the background image
+    private Image background;
+    
     /**
      * Constructor for Manager, this is the point where we load any menu option configurations
      * @param engine Engine for our game that contains all objects needed
@@ -45,17 +48,17 @@ public final class Manager implements IManager
     @Override
     public void reset(final Engine engine) throws Exception
     {
+        if (background == null)
+            background = engine.getResources().getGameImage(GameImages.Keys.Background1);
+        
         if (puzzles == null)
-            puzzles = new Puzzles();
+            puzzles = new Puzzles(engine.getResources().getGameImage(GameImages.Keys.Board));
         
         //set the difficulty
         getPuzzles().setDifficulty(Puzzles.Difficulty.values()[engine.getMenu().getOptionSelectionIndex(LayerKey.Options, OptionKey.Difficulty)]);
         
-        //reset the font
-        getPuzzles().resetFont();
-        
         if (human == null)
-            human = new Human();
+            human = new Human(engine.getResources().getGameImage(GameImages.Keys.Board));
         
         //engine.getResources().getGameImage(GameImages.Keys.MapBackground));
         
@@ -152,19 +155,24 @@ public final class Manager implements IManager
         if (getPuzzles() == null || getHuman() == null)
             return;
         
-        //did we solve the puzzle
-        if (getPuzzles().getPuzzle().hasMatch(getHuman().getPuzzle()))
+        if (background != null)
+            graphics.drawImage(background, 0, 0, null);
+        
+        //if the human solved the puzzle
+        if (getHuman().getPuzzle().hasSolved())
         {
-            getPuzzles().getPuzzle().markSolved();
-            getHuman().getPuzzle().markSolved();
-            getHuman().getPuzzle().remove(Puzzles.KEY_MARK);
-            getHuman().setHighlight(false);
+            //draw human board
             getHuman().render(graphics);
+            
+            //maybe something else better could be shown here
             graphics.drawString("YOU WIN - " + getPuzzles().getPuzzle().getDesc(), 100, 500);
         }
         else
         {
+            //draw the puzzle with hints
             getPuzzles().render(graphics);
+            
+            //now draw human board
             getHuman().render(graphics);
         }
     }

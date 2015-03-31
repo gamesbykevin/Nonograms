@@ -5,6 +5,7 @@ import com.gamesbykevin.nonograms.puzzles.Puzzles;
 import com.gamesbykevin.nonograms.shared.IElement;
 
 import java.awt.Graphics;
+import java.awt.Image;
 
 /**
  * This is where we will manage the human input
@@ -12,9 +13,9 @@ import java.awt.Graphics;
  */
 public final class Human extends Player
 {
-    public Human()
+    public Human(final Image image)
     {
-        super();
+        super(image);
     }
     
     @Override
@@ -36,6 +37,9 @@ public final class Human extends Player
         
         if (engine.getMouse().hasMouseMoved())
         {
+            //check if the board has been solved
+            super.checkComplete(engine);
+            
             //if mouse moved update highlighted location if within bounds
             final int col = (engine.getMouse().getLocation().x - Puzzles.START_X) / engine.getManager().getPuzzles().getPuzzle().getCellDimensions();
             final int row = (engine.getMouse().getLocation().y - Puzzles.START_Y) / engine.getManager().getPuzzles().getPuzzle().getCellDimensions();
@@ -101,6 +105,9 @@ public final class Human extends Player
                     }
                 }
             }
+            
+            //check if the board has been solved
+            super.checkComplete(engine);
         }
         
         //reset mouse events
