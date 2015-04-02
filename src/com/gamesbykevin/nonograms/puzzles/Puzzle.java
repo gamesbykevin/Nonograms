@@ -3,7 +3,8 @@ package com.gamesbykevin.nonograms.puzzles;
 import com.gamesbykevin.framework.base.Sprite;
 import com.gamesbykevin.framework.resources.Disposable;
 
-import java.awt.Color;
+import com.gamesbykevin.nonograms.player.Player;
+
 import java.awt.Graphics;
 import java.awt.Image;
 import java.util.ArrayList;
@@ -42,11 +43,11 @@ public final class Puzzle extends Sprite implements Disposable
     
     public enum AnimationKey
     {
-        Empty, Fill, Mark,
+        Empty, Fill, Mark, Highlight, 
         Desc0, Desc1, Desc2, Desc3, Desc4, Desc5, 
         Desc6, Desc7, Desc8, Desc9, Desc10, Desc11, 
         Desc12, Desc13, Desc14, Desc15, Desc16, Desc17, 
-        Desc18, Desc19, Desc20
+        Desc18, Desc19, Desc20, 
     }
     
     public Puzzle(final Puzzle puzzle)
@@ -78,6 +79,7 @@ public final class Puzzle extends Sprite implements Disposable
         super.getSpriteSheet().add(0 * 64, 0 * 64, 64, 64, 0, AnimationKey.Empty);
         super.getSpriteSheet().add(2 * 64, 0 * 64, 64, 64, 0, AnimationKey.Fill);
         super.getSpriteSheet().add(1 * 64, 0 * 64, 64, 64, 0, AnimationKey.Mark);
+        super.getSpriteSheet().add(3 * 64, 0 * 64, 64, 64, 0, AnimationKey.Highlight);
         
         //add the numbers as well
         super.getSpriteSheet().add(4 * 64, 2 * 64, 64, 64, 0, AnimationKey.Desc0);
@@ -252,16 +254,10 @@ public final class Puzzle extends Sprite implements Disposable
     /**
      * Does the specified puzzle match with this one
      * @param puzzle The puzzle we want to check
-     * @throws Exception if we come across an unexpected key value, or if the puzzles compared do not have the same dimensions
      * @return true if both puzzles have the same filled and empty positions, false otherwise
      */
-    public boolean hasMatch(final Puzzle puzzle) throws Exception
+    public boolean hasMatch(final Puzzle puzzle)
     {
-        if (getRows() != puzzle.getRows())
-            throw new Exception("These puzzles have different row dimensions");
-        if (getCols() != puzzle.getCols())
-            throw new Exception("These puzzles have different column dimensions");
-        
         for (int row = 0; row < getRows(); row++)
         {
             for (int col = 0; col < getCols(); col++)
@@ -285,9 +281,6 @@ public final class Puzzle extends Sprite implements Disposable
                         if (puzzle.getKeyValue(col, row) != Puzzles.KEY_EMPTY && puzzle.getKeyValue(col, row) != Puzzles.KEY_MARK)
                             return false;
                         break;
-                        
-                    default:
-                        throw new Exception("Puzzle key value (" + value + ") not accounted for.");
                 }
             }
         }
@@ -404,15 +397,12 @@ public final class Puzzle extends Sprite implements Disposable
     /**
      * Render puzzle
      * @param graphics Object used to draw puzzle
-     * @param Image the image containing our animation(s)
+     * @param Player our player object
      * @param startX Where our puzzle starts
      * @param startY Where our puzzle starts
      */
-    public void render(final Graphics graphics, final Image image, final int startX, final int startY)
+    public void render(final Graphics graphics, final Player player, final int startX, final int startY)
     {
-        //for now the squares will be white
-        graphics.setColor(Color.WHITE);
-        
         //set the dimensions
         super.setDimensions(getCellDimensions(), getCellDimensions());
         
@@ -436,39 +426,26 @@ public final class Puzzle extends Sprite implements Disposable
                         
                     case Puzzles.KEY_EMPTY:
                     default:
+                        //first default to the empty
                         super.getSpriteSheet().setCurrent(AnimationKey.Empty);
+                        
+                        //if this location matches the players location
+                        if (col == player.getHighlightCol() || row == player.getHighlightRow())
+                        {
+                            if (player.hasHighlight())
+                                super.getSpriteSheet().setCurrent(AnimationKey.Highlight);
+                        }
                         break;
                 }
                 
                 try
                 {
                     //draw the animation
-                    super.draw(graphics, image);
+                    super.draw(graphics, player.getImage());
                 }
                 catch (Exception e)
                 {
                     e.printStackTrace();
-                }
-            }
-        }
-    }
-    
-    public void renderHighlight(final Graphics graphics, final int startX, final int startY, final int highlightCol, final int highlightRow)
-    {
-        //if we have not yet solved
-        if (!hasSolved())
-        {
-            graphics.setColor(Color.YELLOW);
-
-            for (int row = 0; row < getRows(); row++)
-            {
-                for (int col = 0; col < getCols(); col++)
-                {
-                    final int x = Puzzles.getX(startX, getCellDimensions(), col);
-                    final int y = Puzzles.getY(startY, getCellDimensions(), row);
-
-                    if (row == highlightRow || col == highlightCol)
-                        graphics.fillRect(x, y, getCellDimensions(), getCellDimensions());
                 }
             }
         }
@@ -613,10 +590,10 @@ public final class Puzzle extends Sprite implements Disposable
                 //set coordinates
                 super.setX(x);
                 super.setY(y);
-                
+
                 //assign temporary animation
                 assignAnimation(tmp.get(i));
-                
+
                 try
                 {
                     //draw animation
@@ -647,10 +624,10 @@ public final class Puzzle extends Sprite implements Disposable
                 //set coordinates
                 super.setX(x);
                 super.setY(y);
-                
+
                 //assign temporary animation
                 assignAnimation(tmp.get(i));
-                
+
                 try
                 {
                     //draw animation

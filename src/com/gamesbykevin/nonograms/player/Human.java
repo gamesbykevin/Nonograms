@@ -2,7 +2,6 @@ package com.gamesbykevin.nonograms.player;
 
 import com.gamesbykevin.nonograms.engine.Engine;
 import com.gamesbykevin.nonograms.puzzles.Puzzles;
-import com.gamesbykevin.nonograms.shared.IElement;
 
 import java.awt.Graphics;
 import java.awt.Image;
@@ -21,7 +20,7 @@ public final class Human extends Player
     @Override
     public void dispose()
     {
-        
+        super.dispose();
     }
     
     @Override

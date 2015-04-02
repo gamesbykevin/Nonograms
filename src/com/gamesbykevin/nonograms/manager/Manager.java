@@ -49,7 +49,7 @@ public final class Manager implements IManager
     public void reset(final Engine engine) throws Exception
     {
         if (background == null)
-            background = engine.getResources().getGameImage(GameImages.Keys.Background1);
+            background = engine.getResources().getGameImage(GameImages.Keys.Background2);
         
         if (puzzles == null)
             puzzles = new Puzzles(engine.getResources().getGameImage(GameImages.Keys.Board));
@@ -164,8 +164,8 @@ public final class Manager implements IManager
             //draw human board
             getHuman().render(graphics);
             
-            //maybe something else better could be shown here
-            graphics.drawString("YOU WIN - " + getPuzzles().getPuzzle().getDesc(), 100, 500);
+            //draw puzzle description
+            getHuman().renderDesc(graphics, getPuzzles().getPuzzle().getDesc());
         }
         else
         {

@@ -1,15 +1,12 @@
 package com.gamesbykevin.nonograms.puzzles;
 
 import com.gamesbykevin.framework.base.Sprite;
-import com.gamesbykevin.framework.menu.Menu;
 import com.gamesbykevin.framework.resources.Text;
 
 import com.gamesbykevin.nonograms.engine.Engine;
 import com.gamesbykevin.nonograms.resources.GameText.Keys;
 import com.gamesbykevin.nonograms.shared.IElement;
 
-import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.util.ArrayList;
@@ -196,6 +193,37 @@ public final class Puzzles extends Sprite implements IElement
         if (rows < DIMENSIONS_VERY_EASY)
             rows = DIMENSIONS_VERY_EASY;
         
+        /*
+        //first check if there is a mismatch
+        if (cols != rows)
+        {
+            //if dimensions are close enough, make them  match
+            if (cols - 1 == rows || cols + 1 == rows)
+            {
+                if (cols == DIMENSIONS_HARD || rows == DIMENSIONS_HARD)
+                {
+                    cols = DIMENSIONS_HARD;
+                    rows = DIMENSIONS_HARD;
+                }
+                else if (cols == DIMENSIONS_MEDIUM || rows == DIMENSIONS_MEDIUM)
+                {
+                    cols = DIMENSIONS_MEDIUM;
+                    rows = DIMENSIONS_MEDIUM;
+                }
+                else if (cols == DIMENSIONS_EASY || rows == DIMENSIONS_EASY)
+                {
+                    cols = DIMENSIONS_EASY;
+                    rows = DIMENSIONS_EASY;
+                }
+                else if (cols == DIMENSIONS_VERY_EASY || rows == DIMENSIONS_VERY_EASY)
+                {
+                    cols = DIMENSIONS_VERY_EASY;
+                    rows = DIMENSIONS_VERY_EASY;
+                }
+            }
+        }
+        */
+        
         //create a new puzzle of specified size
         puzzle = new Puzzle(cols, rows, text.getLine(start));
         
@@ -211,6 +239,10 @@ public final class Puzzles extends Sprite implements IElement
             //now check every column in that line
             for (int col = 0; col < cols; col++)
             {
+                //make sure in bounds
+                if (col >= puzzle.getCols() || row >= puzzle.getRows())
+                    continue;
+                
                 //default empty value
                 puzzle.setKeyValue(col, row, KEY_EMPTY);
                 
@@ -243,21 +275,53 @@ public final class Puzzles extends Sprite implements IElement
         if (puzzle.getCols() != puzzle.getRows())
             return;
         
+        //the list for a specified difficulty
+        List<Puzzle> list = null;
+                
         if (puzzle.getCols() == DIMENSIONS_HARD)
         {
-            getPuzzleList(Difficulty.Hard).add(puzzle);
+            list = getPuzzleList(Difficulty.Hard);
         }
         else if (puzzle.getCols() >= DIMENSIONS_MEDIUM && puzzle.getCols() < DIMENSIONS_HARD)
         {
-            getPuzzleList(Difficulty.Medium).add(puzzle);
+            list = getPuzzleList(Difficulty.Medium);
         }
         else if (puzzle.getCols() >= DIMENSIONS_EASY && puzzle.getCols() < DIMENSIONS_MEDIUM)
         {
-            getPuzzleList(Difficulty.Easy).add(puzzle);
+            list = getPuzzleList(Difficulty.Easy);
         }
         else if (puzzle.getCols() >= DIMENSIONS_VERY_EASY && puzzle.getCols() < DIMENSIONS_EASY)
         {
-            getPuzzleList(Difficulty.VeryEasy).add(puzzle);
+            list = getPuzzleList(Difficulty.VeryEasy);
+        }
+        
+        //make sure the list exists
+        if (list != null)
+        {
+            //does any other puzzle match the current one we are adding
+            boolean match = false;
+            
+            //make sure the puzzle hasn't already been added first
+            for (int i = 0; i < list.size(); i++)
+            {
+                //get the current puzzle
+                final Puzzle tmp = list.get(i);
+                
+                //only check if the dimensions match
+                if (tmp.getCols() != puzzle.getCols() || tmp.getRows() != puzzle.getRows())
+                    continue;
+                
+                //if the puzzle matches
+                if (tmp.hasMatch(puzzle))
+                {
+                    match = true;
+                    break;
+                }
+            }
+            
+            //if no match was found add to the list
+            if (!match)
+                list.add(puzzle);
         }
     }
     

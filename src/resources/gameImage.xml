@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <images>
     <image id="Background1">resources/images/game/background1.png</image>
-    <image id="Background2">resources/images/game/background2.jpg</image>
+    <image id="Background2">resources/images/game/background2.png</image>
     <image id="Board">resources/images/game/board.png</image>
 </images>

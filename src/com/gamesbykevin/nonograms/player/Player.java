@@ -62,7 +62,7 @@ public abstract class Player extends Sprite implements IElement, Disposable
      * Get the highlighted column
      * @return The column where our player is currently located
      */
-    protected int getHighlightCol()
+    public int getHighlightCol()
     {
         return this.highlightCol;
     }
@@ -80,7 +80,7 @@ public abstract class Player extends Sprite implements IElement, Disposable
      * Get the highlighted row
      * @return The row where our player is currently located
      */
-    protected int getHighlightRow()
+    public int getHighlightRow()
     {
         return this.highlightRow;
     }
@@ -132,13 +132,13 @@ public abstract class Player extends Sprite implements IElement, Disposable
     @Override
     public void render(final Graphics graphics)
     {
-        if (hasHighlight())
-        {
-            //draw highlight first of our location
-            getPuzzle().renderHighlight(graphics, Puzzles.START_X, Puzzles.START_Y, getHighlightCol(), getHighlightRow());
-        }
-        
         //then draw our puzzle
-        getPuzzle().render(graphics, getImage(), Puzzles.START_X, Puzzles.START_Y);
+        getPuzzle().render(graphics, this, Puzzles.START_X, Puzzles.START_Y);
+    }
+    
+    public void renderDesc(final Graphics graphics, final String desc)
+    {
+        //draw description
+        graphics.drawString(desc, Puzzles.START_X, Puzzles.START_Y - 1);
     }
 }
