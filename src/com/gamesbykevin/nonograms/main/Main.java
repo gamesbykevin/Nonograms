@@ -337,8 +337,9 @@ public final class Main extends Thread implements Disposable
     }
     
     /**
-     * Does the applet have focus, if this is a JPanel it will always return true
-     * @return boolean
+     * Do we have focus? <br>
+     * If this is a JPanel it will always return true
+     * @return true if the focus is on this container, false otherwise
      */
     public boolean hasFocus()
     {

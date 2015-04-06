@@ -12,6 +12,8 @@ import com.gamesbykevin.nonograms.resources.GameImages;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The class that contains all of the game elements
@@ -49,7 +51,25 @@ public final class Manager implements IManager
     public void reset(final Engine engine) throws Exception
     {
         if (background == null)
-            background = engine.getResources().getGameImage(GameImages.Keys.Background2);
+        {
+            List<GameImages.Keys> keys = new ArrayList<>();
+            
+            keys.add(GameImages.Keys.Background1);
+            keys.add(GameImages.Keys.Background2);
+            keys.add(GameImages.Keys.Background3);
+            keys.add(GameImages.Keys.Background4);
+            keys.add(GameImages.Keys.Background5);
+            keys.add(GameImages.Keys.Background6);
+            keys.add(GameImages.Keys.Background7);
+            keys.add(GameImages.Keys.Background8);
+            keys.add(GameImages.Keys.Background9);
+            keys.add(GameImages.Keys.Background10);
+            keys.add(GameImages.Keys.Background11);
+            keys.add(GameImages.Keys.Background12);
+            
+            //pick a random background
+            background = engine.getResources().getGameImage(keys.get(engine.getRandom().nextInt(keys.size())));
+        }
         
         if (puzzles == null)
             puzzles = new Puzzles(engine.getResources().getGameImage(GameImages.Keys.Board));
@@ -58,7 +78,12 @@ public final class Manager implements IManager
         getPuzzles().setDifficulty(Puzzles.Difficulty.values()[engine.getMenu().getOptionSelectionIndex(LayerKey.Options, OptionKey.Difficulty)]);
         
         if (human == null)
-            human = new Human(engine.getResources().getGameImage(GameImages.Keys.Board));
+        {
+            human = new Human(
+                engine.getResources().getGameImage(GameImages.Keys.Board), 
+                engine.getResources().getGameImage(GameImages.Keys.ActorImage)
+            );
+        }
         
         //engine.getResources().getGameImage(GameImages.Keys.MapBackground));
         
@@ -134,15 +159,10 @@ public final class Manager implements IManager
     public void update(final Engine engine) throws Exception
     {
         if (getPuzzles() != null)
-        {
             getPuzzles().update(engine);
-        }
         
         if (getHuman() != null)
-        {
-            if (!getPuzzles().getPuzzle().hasSolved())
-                getHuman().update(engine);
-        }
+            getHuman().update(engine);
     }
     
     /**

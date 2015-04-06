@@ -193,7 +193,6 @@ public final class Puzzles extends Sprite implements IElement
         if (rows < DIMENSIONS_VERY_EASY)
             rows = DIMENSIONS_VERY_EASY;
         
-        /*
         //first check if there is a mismatch
         if (cols != rows)
         {
@@ -222,7 +221,6 @@ public final class Puzzles extends Sprite implements IElement
                 }
             }
         }
-        */
         
         //create a new puzzle of specified size
         puzzle = new Puzzle(cols, rows, text.getLine(start));
@@ -282,15 +280,15 @@ public final class Puzzles extends Sprite implements IElement
         {
             list = getPuzzleList(Difficulty.Hard);
         }
-        else if (puzzle.getCols() >= DIMENSIONS_MEDIUM && puzzle.getCols() < DIMENSIONS_HARD)
+        else if (puzzle.getCols() == DIMENSIONS_MEDIUM)
         {
             list = getPuzzleList(Difficulty.Medium);
         }
-        else if (puzzle.getCols() >= DIMENSIONS_EASY && puzzle.getCols() < DIMENSIONS_MEDIUM)
+        else if (puzzle.getCols() == DIMENSIONS_EASY)
         {
             list = getPuzzleList(Difficulty.Easy);
         }
-        else if (puzzle.getCols() >= DIMENSIONS_VERY_EASY && puzzle.getCols() < DIMENSIONS_EASY)
+        else if (puzzle.getCols() == DIMENSIONS_VERY_EASY)
         {
             list = getPuzzleList(Difficulty.VeryEasy);
         }
@@ -341,7 +339,7 @@ public final class Puzzles extends Sprite implements IElement
         //if the puzzles list is empty
         if (puzzles.isEmpty())
         {
-            //create array list for each difficulty
+            //create array list containing the puzzles for each difficulty
             for (int i = 0; i < Difficulty.values().length; i++)
             {
                 puzzles.put(Difficulty.values()[i], new ArrayList<Puzzle>());

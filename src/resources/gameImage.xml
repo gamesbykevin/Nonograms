@@ -2,5 +2,16 @@
 <images>
     <image id="Background1">resources/images/game/background1.png</image>
     <image id="Background2">resources/images/game/background2.png</image>
+    <image id="Background3">resources/images/game/background3.png</image>
+    <image id="Background4">resources/images/game/background4.png</image>
+    <image id="Background5">resources/images/game/background5.png</image>
+    <image id="Background6">resources/images/game/background6.png</image>
+    <image id="Background7">resources/images/game/background7.png</image>
+    <image id="Background8">resources/images/game/background8.png</image>
+    <image id="Background9">resources/images/game/background9.png</image>
+    <image id="Background10">resources/images/game/background10.png</image>
+    <image id="Background11">resources/images/game/background11.png</image>
+    <image id="Background12">resources/images/game/background12.png</image>
     <image id="Board">resources/images/game/board.png</image>
+    <image id="ActorImage">resources/images/game/spritesheet.png</image>
 </images>

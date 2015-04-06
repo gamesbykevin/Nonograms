@@ -3,7 +3,6 @@ package com.gamesbykevin.nonograms.player;
 import com.gamesbykevin.nonograms.engine.Engine;
 import com.gamesbykevin.nonograms.puzzles.Puzzles;
 
-import java.awt.Graphics;
 import java.awt.Image;
 
 /**
@@ -12,9 +11,9 @@ import java.awt.Image;
  */
 public final class Human extends Player
 {
-    public Human(final Image image)
+    public Human(final Image image, final Image actorImage)
     {
-        super(image);
+        super(image, actorImage);
     }
     
     @Override
@@ -26,6 +25,10 @@ public final class Human extends Player
     @Override
     public void update(final Engine engine) throws Exception
     {
+        //don't continue if the puzzle has been solved
+        if (engine.getManager().getPuzzles().getPuzzle().hasSolved())
+            return;
+        
         //if the human does not have a puzzle, create one from the current in play
         if (getPuzzle() == null)
             create(engine.getManager().getPuzzles().getPuzzle());
@@ -61,6 +64,10 @@ public final class Human extends Player
             final int col = (engine.getMouse().getLocation().x - Puzzles.START_X) / engine.getManager().getPuzzles().getPuzzle().getCellDimensions();
             final int row = (engine.getMouse().getLocation().y - Puzzles.START_Y) / engine.getManager().getPuzzles().getPuzzle().getCellDimensions();
 
+            //get the start coordinates
+            final int startX = Puzzles.START_X + (col * getPuzzle().getCellDimensions());
+            final int startY = Puzzles.START_Y + (row * getPuzzle().getCellDimensions());
+            
             //make sure within column range
             if (col >= 0 && col <= getPuzzle().getCols() - 1)
             {
@@ -77,11 +84,13 @@ public final class Human extends Player
                         switch (getPuzzle().getKeyValue(col, row))
                         {
                             case Puzzles.KEY_EMPTY:
-                                getPuzzle().setKeyValue(col, row, Puzzles.KEY_MARK);
+                                getActor().addDestination(startX, startY, col, row, Puzzles.KEY_MARK);
+                                //getPuzzle().setKeyValue(col, row, Puzzles.KEY_MARK);
                                 break;
                                 
                             case Puzzles.KEY_MARK:
-                                getPuzzle().setKeyValue(col, row, Puzzles.KEY_EMPTY);
+                                getActor().addDestination(startX, startY, col, row, Puzzles.KEY_EMPTY);
+                                //getPuzzle().setKeyValue(col, row, Puzzles.KEY_EMPTY);
                                 break;
                         }
                     }
@@ -90,11 +99,13 @@ public final class Human extends Player
                         switch (getPuzzle().getKeyValue(col, row))
                         {
                             case Puzzles.KEY_EMPTY:
-                                getPuzzle().setKeyValue(col, row, Puzzles.KEY_FILL);
+                                getActor().addDestination(startX, startY, col, row, Puzzles.KEY_FILL);
+                                //getPuzzle().setKeyValue(col, row, Puzzles.KEY_FILL);
                                 break;
                                 
                             case Puzzles.KEY_FILL:
-                                getPuzzle().setKeyValue(col, row, Puzzles.KEY_EMPTY);
+                                getActor().addDestination(startX, startY, col, row, Puzzles.KEY_EMPTY);
+                                //getPuzzle().setKeyValue(col, row, Puzzles.KEY_EMPTY);
                                 break;
                                 
                             case Puzzles.KEY_MARK:
@@ -108,6 +119,9 @@ public final class Human extends Player
             //check if the board has been solved
             super.checkComplete(engine);
         }
+        
+        //update actor
+        super.updateActor(engine);
         
         //reset mouse events
         engine.getMouse().reset();

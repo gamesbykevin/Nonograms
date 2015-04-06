@@ -21,7 +21,7 @@ public final class Puzzle extends Sprite implements Disposable
     public static final int CELL_DIMENSIONS_SMALL = 24;
     public static final int CELL_DIMENSIONS_MEDIUM = 32;
     public static final int CELL_DIMENSIONS_LARGE = 40;
-    public static final int CELL_DIMENSIONS_VERY_LARGE = 48;
+    public static final int CELL_DIMENSIONS_VERY_LARGE = 64;
     
     //the key to our puzzle
     private int[][] key;
@@ -43,7 +43,8 @@ public final class Puzzle extends Sprite implements Disposable
     
     public enum AnimationKey
     {
-        Empty, Fill, Mark, Highlight, 
+        Empty,          Fill,           Mark, 
+        HighlightEmpty, HighlightFill, HighlightMark,
         Desc0, Desc1, Desc2, Desc3, Desc4, Desc5, 
         Desc6, Desc7, Desc8, Desc9, Desc10, Desc11, 
         Desc12, Desc13, Desc14, Desc15, Desc16, Desc17, 
@@ -79,7 +80,10 @@ public final class Puzzle extends Sprite implements Disposable
         super.getSpriteSheet().add(0 * 64, 0 * 64, 64, 64, 0, AnimationKey.Empty);
         super.getSpriteSheet().add(2 * 64, 0 * 64, 64, 64, 0, AnimationKey.Fill);
         super.getSpriteSheet().add(1 * 64, 0 * 64, 64, 64, 0, AnimationKey.Mark);
-        super.getSpriteSheet().add(3 * 64, 0 * 64, 64, 64, 0, AnimationKey.Highlight);
+        
+        super.getSpriteSheet().add(3 * 64, 0 * 64, 64, 64, 0, AnimationKey.HighlightEmpty);
+        super.getSpriteSheet().add(5 * 64, 0 * 64, 64, 64, 0, AnimationKey.HighlightFill);
+        super.getSpriteSheet().add(5 * 64, 1 * 64, 64, 64, 0, AnimationKey.HighlightMark);
         
         //add the numbers as well
         super.getSpriteSheet().add(4 * 64, 2 * 64, 64, 64, 0, AnimationKey.Desc0);
@@ -312,15 +316,15 @@ public final class Puzzle extends Sprite implements Disposable
     public final void reset()
     {
         //determine the size of the puzzle
-        if (getCols() >= Puzzles.DIMENSIONS_HARD)
+        if (getCols() == Puzzles.DIMENSIONS_HARD)
         {
             this.cellDimension = CELL_DIMENSIONS_SMALL;
         }
-        else if (getCols() >= Puzzles.DIMENSIONS_MEDIUM && getCols() < Puzzles.DIMENSIONS_HARD)
+        else if (getCols() == Puzzles.DIMENSIONS_MEDIUM)
         {
             this.cellDimension = CELL_DIMENSIONS_MEDIUM;
         }
-        else if (getCols() >= Puzzles.DIMENSIONS_EASY && getCols() < Puzzles.DIMENSIONS_MEDIUM)
+        else if (getCols() == Puzzles.DIMENSIONS_EASY)
         {
             this.cellDimension = CELL_DIMENSIONS_LARGE;
         }
@@ -418,10 +422,18 @@ public final class Puzzle extends Sprite implements Disposable
                 {
                     case Puzzles.KEY_FILL:
                         super.getSpriteSheet().setCurrent(AnimationKey.Fill);
+                        
+                        //do we highlight the location
+                        if (player.hasHighlight(col, row))
+                            super.getSpriteSheet().setCurrent(AnimationKey.HighlightFill);
                         break;
                         
                     case Puzzles.KEY_MARK:
                         super.getSpriteSheet().setCurrent(AnimationKey.Mark);
+                        
+                        //do we highlight the location
+                        if (player.hasHighlight(col, row))
+                            super.getSpriteSheet().setCurrent(AnimationKey.HighlightMark);
                         break;
                         
                     case Puzzles.KEY_EMPTY:
@@ -429,12 +441,9 @@ public final class Puzzle extends Sprite implements Disposable
                         //first default to the empty
                         super.getSpriteSheet().setCurrent(AnimationKey.Empty);
                         
-                        //if this location matches the players location
-                        if (col == player.getHighlightCol() || row == player.getHighlightRow())
-                        {
-                            if (player.hasHighlight())
-                                super.getSpriteSheet().setCurrent(AnimationKey.Highlight);
-                        }
+                        //do we highlight the location
+                        if (player.hasHighlight(col, row))
+                            super.getSpriteSheet().setCurrent(AnimationKey.HighlightEmpty);
                         break;
                 }
                 
@@ -464,11 +473,14 @@ public final class Puzzle extends Sprite implements Disposable
         if (!hasSolved())
         {
             //set the dimensions
-            super.setDimensions(getCellDimensions() * .75, getCellDimensions() * .75);
+            super.setDimensions(getCellDimensions() * .65, getCellDimensions() * .65);
             
             //draw the column hints
             renderColumnHint(graphics, image, startX, startY);
 
+            //set the dimensions
+            super.setDimensions(getCellDimensions() * .75, getCellDimensions() * .75);
+            
             //draw the row hints
             renderRowHint(graphics, image, startX, startY);
         }

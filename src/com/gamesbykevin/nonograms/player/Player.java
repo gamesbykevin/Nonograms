@@ -4,6 +4,7 @@ import com.gamesbykevin.framework.base.Sprite;
 import com.gamesbykevin.framework.resources.Disposable;
 
 import com.gamesbykevin.nonograms.engine.Engine;
+import com.gamesbykevin.nonograms.player.actor.Actor;
 import com.gamesbykevin.nonograms.puzzles.Puzzle;
 import com.gamesbykevin.nonograms.puzzles.Puzzles;
 import com.gamesbykevin.nonograms.shared.IElement;
@@ -26,9 +27,20 @@ public abstract class Player extends Sprite implements IElement, Disposable
     //do we highlight the player current location
     private boolean showHighlight = true;
     
-    protected Player(final Image image)
+    //the animated actor on the screen
+    private Actor actor;
+    
+    protected Player(final Image image, final Image actorImage)
     {
         super.setImage(image);
+        
+        //create a new actor
+        this.actor = new Actor(actorImage);
+    }
+    
+    protected Actor getActor()
+    {
+        return this.actor;
     }
     
     /**
@@ -41,12 +53,24 @@ public abstract class Player extends Sprite implements IElement, Disposable
     }
     
     /**
-     * Do we highlight the players current location
-     * @return true=yes, false=no
+     * Do we highlight the location?<br>
+     * The location specified will only return true if highlight is enabled and matches the player highlight location
+     * @param col The column we want to check
+     * @param row The row we want to check
+     * @return if highlight is enabled and the column or row match the location return true, otherwise return false
      */
-    public boolean hasHighlight()
+    public boolean hasHighlight(final int col, final int row)
     {
-        return this.showHighlight;
+        //if we have highlight enabled
+        if (this.showHighlight)
+        {
+            //now check if the location has a match
+            if (col == getHighlightCol() || row == getHighlightRow())
+                return true;
+        }
+        
+        //we don't need to highlight
+        return false;
     }
     
     /**
@@ -62,7 +86,7 @@ public abstract class Player extends Sprite implements IElement, Disposable
      * Get the highlighted column
      * @return The column where our player is currently located
      */
-    public int getHighlightCol()
+    private int getHighlightCol()
     {
         return this.highlightCol;
     }
@@ -80,7 +104,7 @@ public abstract class Player extends Sprite implements IElement, Disposable
      * Get the highlighted row
      * @return The row where our player is currently located
      */
-    public int getHighlightRow()
+    private int getHighlightRow()
     {
         return this.highlightRow;
     }
@@ -109,6 +133,11 @@ public abstract class Player extends Sprite implements IElement, Disposable
         board = new Puzzle(puzzle);
     }
     
+    public void updateActor(final Engine engine) throws Exception
+    {
+        getActor().update(engine);
+    }
+    
     public void checkComplete(final Engine engine) throws Exception
     {
         final Puzzle current = engine.getManager().getPuzzles().getPuzzle();
@@ -130,10 +159,13 @@ public abstract class Player extends Sprite implements IElement, Disposable
     }
     
     @Override
-    public void render(final Graphics graphics)
+    public void render(final Graphics graphics) throws Exception
     {
         //then draw our puzzle
         getPuzzle().render(graphics, this, Puzzles.START_X, Puzzles.START_Y);
+        
+        //draw the actor
+        getActor().render(graphics);
     }
     
     public void renderDesc(final Graphics graphics, final String desc)
