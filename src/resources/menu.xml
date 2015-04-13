@@ -63,6 +63,14 @@
             <option>Very Easy</option>
             <option>Easy</option>
         </options>
+        <options name="Hint: " id="Hint">
+            <option>Off</option>
+            <option>On</option>
+        </options>
+        <options name="Mode: " id="Mode">
+            <option>Regular</option>
+            <option>Timed</option>
+        </options>
         <options name="All Sound: " id="Sound">
             <option>On</option>
             <option>Off</option>
@@ -73,26 +81,12 @@
         </options>
         <options name="Go Back" next="MainTitle" id="MainTitle"></options>
     </layer>
-    <layer id="Controls1" next="Controls2">
+    <layer id="Controls1" next="MainTitle">
         <transition>NONE</transition>
         <force>false</force>
         <pause>true</pause>
         <duration></duration>
         <image>resources/images/menu/controls1.png</image>
-    </layer>
-    <layer id="Controls2" next="Controls3">
-        <transition>NONE</transition>
-        <force>false</force>
-        <pause>true</pause>
-        <duration></duration>
-        <image>resources/images/menu/controls2.png</image>
-    </layer>
-    <layer id="Controls3" next="MainTitle">
-        <transition>NONE</transition>
-        <force>false</force>
-        <pause>true</pause>
-        <duration></duration>
-        <image>resources/images/menu/controls3.png</image>
     </layer>
     <layer id="Instructions1" next="Instructions2">
         <transition>NONE</transition>
@@ -101,19 +95,12 @@
         <duration></duration>
         <image>resources/images/menu/instructions1.png</image>
     </layer>
-    <layer id="Instructions2" next="Instructions3">
+    <layer id="Instructions2" next="MainTitle">
         <transition>NONE</transition>
         <force>false</force>
         <pause>true</pause>
         <duration></duration>
         <image>resources/images/menu/instructions2.png</image>
-    </layer>
-    <layer id="Instructions3" next="MainTitle">
-        <transition>NONE</transition>
-        <force>false</force>
-        <pause>true</pause>
-        <duration></duration>
-        <image>resources/images/menu/instructions3.png</image>
     </layer>
     <layer id="GameStart">
         <!-- THIS LAYER IS INTENTIONALLY LEFT BLANK, THIS IS WHERE MAIN GAMEPLAY WILL START -->

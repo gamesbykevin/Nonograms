@@ -1,6 +1,12 @@
 <?xml version="1.0"?>
 <sounds>
-    <!--
-    <sound id="Explosion1">resources/audio/game/explosion1.wav</sound>
-    -->
+    <sound id="Fill">resources/audio/game/fill.wav</sound>
+    <sound id="UnFill">resources/audio/game/unfill.wav</sound>
+    <sound id="Mark">resources/audio/game/mark.wav</sound>
+    <sound id="UnMark">resources/audio/game/unmark.wav</sound>
+    <sound id="Invalid">resources/audio/game/invalid.wav</sound>
+    <sound id="Solved">resources/audio/game/solved.mp3</sound>
+    <sound id="Theme">resources/audio/game/theme.mp3</sound>
+    <sound id="Gameover">resources/audio/game/gameover.mp3</sound>
+    <sound id="Victory">resources/audio/game/victory.mp3</sound>
 </sounds>

@@ -13,5 +13,7 @@
     <image id="Background11">resources/images/game/background11.png</image>
     <image id="Background12">resources/images/game/background12.png</image>
     <image id="Board">resources/images/game/board.png</image>
-    <image id="ActorImage">resources/images/game/spritesheet.png</image>
+    <image id="Victory">resources/images/game/victory.png</image>
+    <image id="Gameover">resources/images/game/gameover.png</image>
+    <image id="BackgroundStat">resources/images/game/emptyBackground.png</image>
 </images>

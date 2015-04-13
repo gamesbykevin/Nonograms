@@ -1,16 +1,18 @@
 package com.gamesbykevin.nonograms.player;
 
+
 import com.gamesbykevin.framework.base.Sprite;
 import com.gamesbykevin.framework.resources.Disposable;
 
 import com.gamesbykevin.nonograms.engine.Engine;
-import com.gamesbykevin.nonograms.player.actor.Actor;
+import com.gamesbykevin.nonograms.player.stat.Stats;
 import com.gamesbykevin.nonograms.puzzles.Puzzle;
 import com.gamesbykevin.nonograms.puzzles.Puzzles;
 import com.gamesbykevin.nonograms.shared.IElement;
 
 import java.awt.Graphics;
 import java.awt.Image;
+import java.util.Random;
 
 /**
  * This class will represent a player attempting to solve a puzzle
@@ -21,26 +23,34 @@ public abstract class Player extends Sprite implements IElement, Disposable
     //the board where the player makes their selections
     private Puzzle board;
     
+    //the game stats
+    private Stats stats;
+    
     //the location we will highlight to make the puzzle more friendly for the user
     private int highlightCol = 0, highlightRow = 0;
     
     //do we highlight the player current location
     private boolean showHighlight = true;
     
-    //the animated actor on the screen
-    private Actor actor;
+    //has hint enabled
+    private boolean hintEnabled = false;
     
-    protected Player(final Image image, final Image actorImage)
+    protected Player(final Image image, final Image backgroundStatImage)
     {
         super.setImage(image);
         
-        //create a new actor
-        this.actor = new Actor(actorImage);
+        //create stat object
+        this.stats = new Stats(backgroundStatImage);
     }
     
-    protected Actor getActor()
+    public void setHintEnabled(final boolean hintEnabled)
     {
-        return this.actor;
+        this.hintEnabled = hintEnabled;
+    }
+    
+    public boolean hasHintEnabled()
+    {
+        return this.hintEnabled;
     }
     
     /**
@@ -117,11 +127,22 @@ public abstract class Player extends Sprite implements IElement, Disposable
             board.dispose();
             board = null;
         }
+        
+        if (stats != null)
+        {
+            stats.dispose();
+            stats = null;
+        }
     }
     
     public Puzzle getPuzzle()
     {
         return this.board;
+    }
+    
+    public Stats getStats()
+    {
+        return this.stats;
     }
     
     /**
@@ -133,9 +154,106 @@ public abstract class Player extends Sprite implements IElement, Disposable
         board = new Puzzle(puzzle);
     }
     
-    public void updateActor(final Engine engine) throws Exception
+    @Override
+    public void update(final Engine engine) throws Exception
     {
-        getActor().update(engine);
+        //update stats
+        getStats().update(engine);
+    }
+    
+    /**
+     * Perform the necessary steps to setup the next level
+     * @param engine Object containing all game elements
+     */
+    protected void setupNextLevel(final Engine engine)
+    {
+        //next level
+        getStats().nextLevel();
+
+        //set the misc message based on the difficulty
+        switch (engine.getManager().getPuzzles().getDifficulty())
+        {
+            case VeryEasy:
+                getStats().setMiscDesc("Difficulty: Very Easy");
+                break;
+                
+            case Easy:
+                getStats().setMiscDesc("Difficulty: Easy");
+                break;
+                
+            case Medium:
+                getStats().setMiscDesc("Difficulty: Medium");
+                break;
+                
+            case Hard:
+                getStats().setMiscDesc("Difficulty: Hard");
+                break;
+        }
+
+        //render new image
+        getStats().renderImage();
+
+        //reset timer
+        getStats().getTimer().reset();
+
+        //reset player board
+        getPuzzle().reset();
+
+        //remove this puzzle
+        engine.getManager().getPuzzles().removeCurrent();
+
+        //pick next random level
+        engine.getManager().getPuzzles().setRandomLevel(engine.getRandom());
+        
+        //if hint enabled, apply hint
+        if (hasHintEnabled())
+            applyHint(engine.getManager().getPuzzles().getPuzzle(), engine.getRandom());
+    }
+    
+    /**
+     * Apply the hint to the player board.<br>
+     * A random location will be picked.<br>
+     * All vertical and horizontal columns, rows will be revealed
+     * @param puzzle The current puzzle
+     * @param random Object used to make random decisions
+     */
+    public void applyHint(final Puzzle puzzle, final Random random)
+    {
+        //pick random column
+        final int randCol = random.nextInt(puzzle.getCols());
+        
+        //pick random row
+        final int randRow = random.nextInt(puzzle.getRows());
+        
+        //reveal column
+        for (int col = 0; col < puzzle.getCols(); col++)
+        {
+            switch (puzzle.getKeyValue(col, randRow))
+            {
+                case Puzzles.KEY_EMPTY:
+                    getPuzzle().setKeyValue(col, randRow, Puzzles.KEY_MARK);
+                    break;
+                    
+                default:
+                    getPuzzle().setKeyValue(col, randRow, puzzle.getKeyValue(col, randRow));
+                    break;
+            }
+        }
+        
+        //reveal row
+        for (int row = 0; row < puzzle.getRows(); row++)
+        {
+            switch (puzzle.getKeyValue(randCol, row))
+            {
+                case Puzzles.KEY_EMPTY:
+                    getPuzzle().setKeyValue(randCol, row, Puzzles.KEY_MARK);
+                    break;
+                    
+                default:
+                    getPuzzle().setKeyValue(randCol, row, puzzle.getKeyValue(randCol, row));
+                    break;
+            }
+        }
     }
     
     public void checkComplete(final Engine engine) throws Exception
@@ -164,8 +282,8 @@ public abstract class Player extends Sprite implements IElement, Disposable
         //then draw our puzzle
         getPuzzle().render(graphics, this, Puzzles.START_X, Puzzles.START_Y);
         
-        //draw the actor
-        getActor().render(graphics);
+        //draw the stats
+        getStats().render(graphics);
     }
     
     public void renderDesc(final Graphics graphics, final String desc)

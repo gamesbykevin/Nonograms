@@ -4,6 +4,7 @@ import com.gamesbykevin.framework.base.Sprite;
 import com.gamesbykevin.framework.resources.Text;
 
 import com.gamesbykevin.nonograms.engine.Engine;
+import com.gamesbykevin.nonograms.resources.GameAudio;
 import com.gamesbykevin.nonograms.resources.GameText.Keys;
 import com.gamesbykevin.nonograms.shared.IElement;
 
@@ -12,6 +13,7 @@ import java.awt.Image;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 /**
  * This class will contain all of the puzzles in the game
@@ -112,6 +114,50 @@ public final class Puzzles extends Sprite implements IElement
         return getPuzzleList().get(current);
     }
     
+    /**
+     * Get the column position based on the x coordinatE
+     * @param x x-coordinate
+     * @param puzzle The puzzle containing the dimensions
+     * @return The column position
+     */
+    public static double getColumn(final double x, final Puzzle puzzle)
+    {
+        return (x - Puzzles.START_X) / puzzle.getCellDimensions();
+    }
+    
+    /**
+     * Get the row position based on the y coordinate
+     * @param y y-coordinate
+     * @param puzzle The puzzle containing the dimensions
+     * @return The row position
+     */
+    public static double getRow(final double y, final Puzzle puzzle)
+    {
+        return (y - Puzzles.START_Y) / puzzle.getCellDimensions();
+    }
+    
+    /**
+     * Get the x-coordinate based on the column
+     * @param col column
+     * @param puzzle The puzzle containing the dimensions
+     * @return The x-coordinate
+     */
+    public static double getCoordinateX(final double col, final Puzzle puzzle)
+    {
+        return (Puzzles.START_X + (col * puzzle.getCellDimensions()));
+    }
+    
+    /**
+     * Get the y-coordinate based on the row
+     * @param row Row
+     * @param puzzle The puzzle containing the dimensions
+     * @return The y-coordinate
+     */
+    public static double getCoordinateY(final double row, final Puzzle puzzle)
+    {
+        return (Puzzles.START_Y + (row * puzzle.getCellDimensions()));
+    }
+    
     @Override
     public void dispose()
     {
@@ -196,29 +242,36 @@ public final class Puzzles extends Sprite implements IElement
         //first check if there is a mismatch
         if (cols != rows)
         {
-            //if dimensions are close enough, make them  match
-            if (cols - 1 == rows || cols + 1 == rows)
+            //check for any puzzles close to the same dimensions
+            for (int extra = 1; extra <= 2; extra++)
             {
-                if (cols == DIMENSIONS_HARD || rows == DIMENSIONS_HARD)
+                //if dimensions are close enough, make them  match
+                if (cols - extra == rows || cols + extra == rows)
                 {
-                    cols = DIMENSIONS_HARD;
-                    rows = DIMENSIONS_HARD;
+                    if (cols == DIMENSIONS_HARD || rows == DIMENSIONS_HARD)
+                    {
+                        cols = DIMENSIONS_HARD;
+                        rows = DIMENSIONS_HARD;
+                    }
+                    else if (cols == DIMENSIONS_MEDIUM || rows == DIMENSIONS_MEDIUM)
+                    {
+                        cols = DIMENSIONS_MEDIUM;
+                        rows = DIMENSIONS_MEDIUM;
+                    }
+                    else if (cols == DIMENSIONS_EASY || rows == DIMENSIONS_EASY)
+                    {
+                        cols = DIMENSIONS_EASY;
+                        rows = DIMENSIONS_EASY;
+                    }
+                    else if (cols == DIMENSIONS_VERY_EASY || rows == DIMENSIONS_VERY_EASY)
+                    {
+                        cols = DIMENSIONS_VERY_EASY;
+                        rows = DIMENSIONS_VERY_EASY;
+                    }
                 }
-                else if (cols == DIMENSIONS_MEDIUM || rows == DIMENSIONS_MEDIUM)
-                {
-                    cols = DIMENSIONS_MEDIUM;
-                    rows = DIMENSIONS_MEDIUM;
-                }
-                else if (cols == DIMENSIONS_EASY || rows == DIMENSIONS_EASY)
-                {
-                    cols = DIMENSIONS_EASY;
-                    rows = DIMENSIONS_EASY;
-                }
-                else if (cols == DIMENSIONS_VERY_EASY || rows == DIMENSIONS_VERY_EASY)
-                {
-                    cols = DIMENSIONS_VERY_EASY;
-                    rows = DIMENSIONS_VERY_EASY;
-                }
+                
+                //exit loop
+                break;
             }
         }
         
@@ -276,21 +329,21 @@ public final class Puzzles extends Sprite implements IElement
         //the list for a specified difficulty
         List<Puzzle> list = null;
                 
-        if (puzzle.getCols() == DIMENSIONS_HARD)
+        if (puzzle.getCols() == DIMENSIONS_VERY_EASY)
         {
-            list = getPuzzleList(Difficulty.Hard);
+            list = getPuzzleList(Difficulty.VeryEasy);
         }
-        else if (puzzle.getCols() == DIMENSIONS_MEDIUM)
-        {
-            list = getPuzzleList(Difficulty.Medium);
-        }
-        else if (puzzle.getCols() == DIMENSIONS_EASY)
+        else if (puzzle.getCols() <= DIMENSIONS_EASY)
         {
             list = getPuzzleList(Difficulty.Easy);
         }
-        else if (puzzle.getCols() == DIMENSIONS_VERY_EASY)
+        else if (puzzle.getCols() <= DIMENSIONS_MEDIUM)
         {
-            list = getPuzzleList(Difficulty.VeryEasy);
+            list = getPuzzleList(Difficulty.Medium);
+        }
+        else if (puzzle.getCols() <= DIMENSIONS_HARD)
+        {
+            list = getPuzzleList(Difficulty.Hard);
         }
         
         //make sure the list exists
@@ -348,9 +401,54 @@ public final class Puzzles extends Sprite implements IElement
             //load from text file
             load(engine.getResources().getGameText(Keys.Puzzles));
             
-            //pick random puzzle for now
-            this.current = engine.getRandom().nextInt(getPuzzleList().size());
+            //set the random level
+            setRandomLevel(engine.getRandom());
+            
+            //create the human puzzle
+            engine.getManager().getHuman().create(getPuzzle());
+            
+            //stop all sound
+            engine.getResources().stopAllSound();
+            
+            //play main theme
+            engine.getResources().playGameAudio(GameAudio.Keys.Theme, true);
+            
+            //if hints are enabled, apply them
+            if (engine.getManager().getHuman().hasHintEnabled())
+                engine.getManager().getHuman().applyHint(getPuzzle(), engine.getRandom());
         }
+    }
+
+    /**
+     * Do puzzles exist?
+     * @return true if puzzles exist for the current assigned difficulty, false otherwise
+     */
+    public boolean hasPuzzles()
+    {
+        return (!getPuzzleList().isEmpty());
+    }
+    
+    /**
+     * Remove the current puzzle from the list of the current assigned difficulty.<br>
+     */
+    public void removeCurrent()
+    {
+        getPuzzleList().remove(current);
+    }
+    
+    /**
+     * Pick a random level of the current assigned difficulty.<br>
+     * Nothing will happen if no puzzles exist for the assigned difficulty.
+     * @param random Object used to make random decisions
+     */
+    public void setRandomLevel(final Random random)
+    {
+        //don't continue if no puzzles left
+        if (!hasPuzzles())
+            return;
+        
+        //pick random puzzle of assigned difficulty
+        this.current = random.nextInt(getPuzzleList().size());
     }
     
     @Override

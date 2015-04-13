@@ -1,12 +1,12 @@
 package com.gamesbykevin.nonograms.manager;
 
+import com.gamesbykevin.framework.util.Timers;
 import com.gamesbykevin.nonograms.engine.Engine;
 import com.gamesbykevin.nonograms.menu.CustomMenu;
 import com.gamesbykevin.nonograms.menu.CustomMenu.*;
 import com.gamesbykevin.nonograms.player.*;
 import com.gamesbykevin.nonograms.puzzles.Puzzles;
 import com.gamesbykevin.nonograms.resources.GameAudio;
-import com.gamesbykevin.nonograms.resources.GameFont;
 import com.gamesbykevin.nonograms.resources.GameImages;
 
 import java.awt.Graphics;
@@ -33,6 +33,22 @@ public final class Manager implements IManager
     //the background image
     private Image background;
     
+    //assign the images for win/lose
+    private Image imageVictory;
+    private Image imageGameover;
+    
+    //is the game finished
+    private boolean finished = false;
+    
+    //did we win
+    private boolean victory = false;
+    
+    //the default time for each difficulty when playing timed mode
+    private static final long DELAY_DIFFICULTY_VERY_EASY = (Timers.NANO_SECONDS_PER_MINUTE * 2)  + Timers.NANO_SECONDS_PER_SECOND;
+    private static final long DELAY_DIFFICULTY_EASY      = (Timers.NANO_SECONDS_PER_MINUTE * 7) + Timers.NANO_SECONDS_PER_SECOND;
+    private static final long DELAY_DIFFICULTY_MEDIUM    = (Timers.NANO_SECONDS_PER_MINUTE * 15) + Timers.NANO_SECONDS_PER_SECOND;
+    private static final long DELAY_DIFFICULTY_HARD      = (Timers.NANO_SECONDS_PER_MINUTE * 30) + Timers.NANO_SECONDS_PER_SECOND;
+    
     /**
      * Constructor for Manager, this is the point where we load any menu option configurations
      * @param engine Engine for our game that contains all objects needed
@@ -45,11 +61,7 @@ public final class Manager implements IManager
         
         //set the game window where game play will occur
         setWindow(engine.getMain().getScreen());
-    }
-    
-    @Override
-    public void reset(final Engine engine) throws Exception
-    {
+        
         if (background == null)
         {
             List<GameImages.Keys> keys = new ArrayList<>();
@@ -71,6 +83,16 @@ public final class Manager implements IManager
             background = engine.getResources().getGameImage(keys.get(engine.getRandom().nextInt(keys.size())));
         }
         
+        //store the images
+        if (imageVictory == null)
+            imageVictory = engine.getResources().getGameImage(GameImages.Keys.Victory);
+        if (imageGameover == null)
+            imageGameover = engine.getResources().getGameImage(GameImages.Keys.Gameover);
+    }
+    
+    @Override
+    public void reset(final Engine engine) throws Exception
+    {
         if (puzzles == null)
             puzzles = new Puzzles(engine.getResources().getGameImage(GameImages.Keys.Board));
         
@@ -81,19 +103,53 @@ public final class Manager implements IManager
         {
             human = new Human(
                 engine.getResources().getGameImage(GameImages.Keys.Board), 
-                engine.getResources().getGameImage(GameImages.Keys.ActorImage)
+                engine.getResources().getGameImage(GameImages.Keys.BackgroundStat)
             );
+            
+            //do we have hints enabled
+            getHuman().setHintEnabled(engine.getMenu().getOptionSelectionIndex(LayerKey.Options, OptionKey.Hint) == 1);
+            
+            //set the mode (regular or timed)
+            getHuman().getStats().setTimed(engine.getMenu().getOptionSelectionIndex(LayerKey.Options, OptionKey.Mode) == 1);
+            
+            //time remaining for timer
+            long time = 0;
+
+            switch (getPuzzles().getDifficulty())
+            {
+                case VeryEasy:
+                    getHuman().getStats().setMiscDesc("Difficulty: Very Easy");
+                    
+                    if (getHuman().getStats().hasTimed())
+                        time = DELAY_DIFFICULTY_VERY_EASY;
+                    break;
+
+                case Easy:
+                    getHuman().getStats().setMiscDesc("Difficulty: Easy");
+                    
+                    if (getHuman().getStats().hasTimed())
+                        time = DELAY_DIFFICULTY_EASY;
+                    break;
+
+                case Medium:
+                    getHuman().getStats().setMiscDesc("Difficulty: Medium");
+                    
+                    if (getHuman().getStats().hasTimed())
+                        time = DELAY_DIFFICULTY_MEDIUM;
+                    break;
+
+                case Hard:
+                default:
+                    getHuman().getStats().setMiscDesc("Difficulty: Hard");
+                    
+                    if (getHuman().getStats().hasTimed())
+                        time = DELAY_DIFFICULTY_HARD;
+                    break;
+            }
+            
+            //setup timer
+            getHuman().getStats().setupTimer(time);
         }
-        
-        //engine.getResources().getGameImage(GameImages.Keys.MapBackground));
-        
-        /*
-        switch (engine.getMenu().getOptionSelectionIndex(LayerKey.Options, OptionKey.Funds))
-        {
-            default:
-                break;
-        }
-        */
     }
     
     public Human getHuman()
@@ -150,6 +206,16 @@ public final class Manager implements IManager
         }
     }
     
+    public void setFinished(final boolean finished)
+    {
+        this.finished = finished;
+    }
+    
+    public void setVictory(final boolean victory)
+    {
+        this.victory = victory;
+    }
+    
     /**
      * Update all elements
      * @param engine Our game engine
@@ -158,11 +224,59 @@ public final class Manager implements IManager
     @Override
     public void update(final Engine engine) throws Exception
     {
-        if (getPuzzles() != null)
-            getPuzzles().update(engine);
-        
-        if (getHuman() != null)
-            getHuman().update(engine);
+        //make sure game isn't finished yet
+        if (!finished)
+        {
+            if (getPuzzles() != null)
+                getPuzzles().update(engine);
+
+            if (getHuman() != null)
+                getHuman().update(engine);
+            
+            if (!getPuzzles().hasPuzzles())
+            {
+                //flag finished
+                setFinished(true);
+
+                //flag victory
+                setVictory(true);
+            }
+            
+            //if timed mode
+            if (getHuman().getStats().hasTimed())
+            {
+                //if time has passed
+                if (getHuman().getStats().getTimer().hasTimePassed())
+                {
+                    //set time remaining to 0
+                    getHuman().getStats().getTimer().setRemaining(0);
+                    
+                    //flag finished
+                    setFinished(true);
+
+                    //flag loss
+                    setVictory(false);
+                }
+            }
+            
+            //if the game is now finished
+            if (finished)
+            {
+                //stop sound
+                engine.getResources().stopAllSound();
+                
+                if (victory)
+                {
+                    //play victory music
+                    engine.getResources().playGameAudio(GameAudio.Keys.Victory, true);
+                }
+                else
+                {
+                    //play game over music
+                    engine.getResources().playGameAudio(GameAudio.Keys.Gameover, true);
+                }
+            }
+        }
     }
     
     /**
@@ -174,6 +288,16 @@ public final class Manager implements IManager
     {
         if (getPuzzles() == null || getHuman() == null)
             return;
+        
+        //if the game is finished
+        if (finished)
+        {
+            //draw the appropriate image
+            graphics.drawImage(victory ? imageVictory : imageGameover, 0, 0, null);
+            
+            //no need to continue
+            return;
+        }
         
         if (background != null)
             graphics.drawImage(background, 0, 0, null);

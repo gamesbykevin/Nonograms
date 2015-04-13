@@ -2,8 +2,10 @@ package com.gamesbykevin.nonograms.player;
 
 import com.gamesbykevin.nonograms.engine.Engine;
 import com.gamesbykevin.nonograms.puzzles.Puzzles;
+import com.gamesbykevin.nonograms.resources.GameAudio.Keys;
 
 import java.awt.Image;
+import java.awt.event.KeyEvent;
 
 /**
  * This is where we will manage the human input
@@ -11,9 +13,9 @@ import java.awt.Image;
  */
 public final class Human extends Player
 {
-    public Human(final Image image, final Image actorImage)
+    public Human(final Image image, final Image backgroundStatImage)
     {
-        super(image, actorImage);
+        super(image, backgroundStatImage);
     }
     
     @Override
@@ -27,11 +29,26 @@ public final class Human extends Player
     {
         //don't continue if the puzzle has been solved
         if (engine.getManager().getPuzzles().getPuzzle().hasSolved())
+        {
+            //if space bar was pressed
+            if (engine.getKeyboard().hasKeyPressed(KeyEvent.VK_SPACE))
+            {
+                //reset input
+                engine.getKeyboard().reset();
+                
+                //stop all audio
+                engine.getResources().stopAllSound();
+                
+                //setup next level
+                super.setupNextLevel(engine);
+                
+                //only resume playing main theme, if puzzles still exist
+                if (engine.getManager().getPuzzles().hasPuzzles())
+                    engine.getResources().playGameAudio(Keys.Theme, true);
+            }
+            
             return;
-        
-        //if the human does not have a puzzle, create one from the current in play
-        if (getPuzzle() == null)
-            create(engine.getManager().getPuzzles().getPuzzle());
+        }
     
         //determine mouse input
         final boolean mouseRightClick = engine.getMouse().hitRightButton() && engine.getMouse().isMouseReleased();
@@ -61,13 +78,9 @@ public final class Human extends Player
         else if (mouseRightClick || mouseLeftClick)
         {
             //determine where the mouse is
-            final int col = (engine.getMouse().getLocation().x - Puzzles.START_X) / engine.getManager().getPuzzles().getPuzzle().getCellDimensions();
-            final int row = (engine.getMouse().getLocation().y - Puzzles.START_Y) / engine.getManager().getPuzzles().getPuzzle().getCellDimensions();
+            final int col = (int)Puzzles.getColumn(engine.getMouse().getLocation().x, engine.getManager().getPuzzles().getPuzzle());
+            final int row = (int)Puzzles.getRow(engine.getMouse().getLocation().y, engine.getManager().getPuzzles().getPuzzle());
 
-            //get the start coordinates
-            final int startX = Puzzles.START_X + (col * getPuzzle().getCellDimensions());
-            final int startY = Puzzles.START_Y + (row * getPuzzle().getCellDimensions());
-            
             //make sure within column range
             if (col >= 0 && col <= getPuzzle().getCols() - 1)
             {
@@ -84,13 +97,23 @@ public final class Human extends Player
                         switch (getPuzzle().getKeyValue(col, row))
                         {
                             case Puzzles.KEY_EMPTY:
-                                getActor().addDestination(startX, startY, col, row, Puzzles.KEY_MARK);
-                                //getPuzzle().setKeyValue(col, row, Puzzles.KEY_MARK);
+                                getPuzzle().setKeyValue(col, row, Puzzles.KEY_MARK);
+                                
+                                //play sound effect
+                                engine.getResources().playGameAudio(Keys.Mark);
                                 break;
                                 
                             case Puzzles.KEY_MARK:
-                                getActor().addDestination(startX, startY, col, row, Puzzles.KEY_EMPTY);
-                                //getPuzzle().setKeyValue(col, row, Puzzles.KEY_EMPTY);
+                                getPuzzle().setKeyValue(col, row, Puzzles.KEY_EMPTY);
+                                
+                                //play sound effect
+                                engine.getResources().playGameAudio(Keys.UnMark);
+                                break;
+                                
+                            default:
+                                
+                                //play sound effect
+                                engine.getResources().playGameAudio(Keys.Invalid);
                                 break;
                         }
                     }
@@ -99,17 +122,24 @@ public final class Human extends Player
                         switch (getPuzzle().getKeyValue(col, row))
                         {
                             case Puzzles.KEY_EMPTY:
-                                getActor().addDestination(startX, startY, col, row, Puzzles.KEY_FILL);
-                                //getPuzzle().setKeyValue(col, row, Puzzles.KEY_FILL);
+                                getPuzzle().setKeyValue(col, row, Puzzles.KEY_FILL);
+                                
+                                //play sound effect
+                                engine.getResources().playGameAudio(Keys.Fill);
                                 break;
                                 
                             case Puzzles.KEY_FILL:
-                                getActor().addDestination(startX, startY, col, row, Puzzles.KEY_EMPTY);
-                                //getPuzzle().setKeyValue(col, row, Puzzles.KEY_EMPTY);
+                                getPuzzle().setKeyValue(col, row, Puzzles.KEY_EMPTY);
+                                
+                                //play sound effect
+                                engine.getResources().playGameAudio(Keys.UnFill);
                                 break;
                                 
                             case Puzzles.KEY_MARK:
                             default:
+                                
+                                //play sound effect
+                                engine.getResources().playGameAudio(Keys.Invalid);
                                 break;
                         }
                     }
@@ -118,10 +148,26 @@ public final class Human extends Player
             
             //check if the board has been solved
             super.checkComplete(engine);
+            
+            //if the puzzle has been solved
+            if (getPuzzle().hasSolved())
+            {
+                //update misc message
+                getStats().setMiscDesc("Hit 'Space Bar'");
+                
+                //render new image
+                getStats().renderImage();
+                
+                //stop all sound
+                engine.getResources().stopAllSound();
+                
+                //play victory sound
+                engine.getResources().playGameAudio(Keys.Solved, true);
+            }
         }
         
-        //update actor
-        super.updateActor(engine);
+        //update
+        super.update(engine);
         
         //reset mouse events
         engine.getMouse().reset();

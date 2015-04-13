@@ -4,6 +4,7 @@ import com.gamesbykevin.framework.base.Sprite;
 import com.gamesbykevin.framework.resources.Disposable;
 
 import com.gamesbykevin.nonograms.player.Player;
+import java.awt.Color;
 
 import java.awt.Graphics;
 import java.awt.Image;
@@ -107,6 +108,14 @@ public final class Puzzle extends Sprite implements Disposable
         super.getSpriteSheet().add(2 * 64, 4 * 64, 64, 64, 0, AnimationKey.Desc18);
         super.getSpriteSheet().add(3 * 64, 4 * 64, 64, 64, 0, AnimationKey.Desc19);
         super.getSpriteSheet().add(4 * 64, 4 * 64, 64, 64, 0, AnimationKey.Desc20);
+    }
+    
+    /**
+     * Mark this puzzle as un-solved
+     */
+    public void markUnsolved()
+    {
+        this.solved = false;
     }
     
     /**
@@ -311,7 +320,8 @@ public final class Puzzle extends Sprite implements Disposable
     }
     
     /**
-     * Set all locations in the board to empty
+     * Set all locations in the board to empty<br>
+     * Also ensures the puzzle is not solved
      */
     public final void reset()
     {
@@ -340,6 +350,9 @@ public final class Puzzle extends Sprite implements Disposable
                 setKeyValue(col, row, Puzzles.KEY_EMPTY);
             }
         }
+        
+        //mark un-solved
+        markUnsolved();
     }
     
     public int getCols()
