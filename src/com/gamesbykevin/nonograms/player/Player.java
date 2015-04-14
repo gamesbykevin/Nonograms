@@ -208,6 +208,9 @@ public abstract class Player extends Sprite implements IElement, Disposable
         //if hint enabled, apply hint
         if (hasHintEnabled())
             applyHint(engine.getManager().getPuzzles().getPuzzle(), engine.getRandom());
+        
+        //start highlighting again
+        setHighlight(true);
     }
     
     /**
