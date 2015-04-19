@@ -1,5 +1,6 @@
 package com.gamesbykevin.nonograms.player;
 
+import com.gamesbykevin.framework.util.Timers;
 import com.gamesbykevin.nonograms.engine.Engine;
 import com.gamesbykevin.nonograms.puzzles.Puzzles;
 import com.gamesbykevin.nonograms.resources.GameAudio.Keys;
@@ -141,6 +142,24 @@ public final class Human extends Player
                                 //play sound effect
                                 engine.getResources().playGameAudio(Keys.Invalid);
                                 break;
+                        }
+                        
+                        //if time mode is enabled
+                        if (getStats().hasTimed())
+                        {
+                            //if the values are not equal
+                            if (engine.getManager().getPuzzles().getPuzzle().getKeyValue(col, row) != getPuzzle().getKeyValue(col, row))
+                            {
+                                //if player just filled the block, it was a bad move
+                                if (getPuzzle().getKeyValue(col, row) == Puzzles.KEY_FILL)
+                                {
+                                    //get the time remaining
+                                    final long remaining = getStats().getTimer().getRemaining();
+                                    
+                                    //deduct 1 minute from timer
+                                    getStats().getTimer().setRemaining(remaining - Timers.NANO_SECONDS_PER_MINUTE);
+                                }
+                            }
                         }
                     }
                 }
