@@ -175,7 +175,7 @@ public final class Human extends Player
                 getStats().setMiscDesc("Hit 'Space Bar'");
                 
                 //render new image
-                getStats().renderImage();
+                getStats().render();
                 
                 //stop all sound
                 engine.getResources().stopAllSound();

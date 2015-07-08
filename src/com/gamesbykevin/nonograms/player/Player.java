@@ -191,7 +191,7 @@ public abstract class Player extends Sprite implements IElement, Disposable
         }
 
         //render new image
-        getStats().renderImage();
+        getStats().render();
 
         //reset timer
         getStats().getTimer().reset();

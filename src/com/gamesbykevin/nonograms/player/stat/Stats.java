@@ -172,7 +172,7 @@ public final class Stats extends CustomImage implements IElement
         if (current - previous >= Timers.NANO_SECONDS_PER_SECOND)
         {
             //render a new image
-            renderImage();
+            render();
             
             //store the new time
             previous = current;
@@ -183,7 +183,7 @@ public final class Stats extends CustomImage implements IElement
     }
     
     @Override
-    public void renderImage()
+    public void render()
     {
         //clear image
         super.clear();

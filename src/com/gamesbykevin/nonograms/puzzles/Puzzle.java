@@ -418,7 +418,7 @@ public final class Puzzle extends Sprite implements Disposable
      * @param startX Where our puzzle starts
      * @param startY Where our puzzle starts
      */
-    public void render(final Graphics graphics, final Player player, final int startX, final int startY)
+    public void render(final Graphics graphics, final Player player, final int startX, final int startY) throws Exception
     {
         //set the dimensions
         super.setDimensions(getCellDimensions(), getCellDimensions());
